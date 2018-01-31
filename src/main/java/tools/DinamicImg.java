@@ -85,8 +85,8 @@ public class DinamicImg {
 			int [] colorBackground,
 			String text,
 			Font font) throws IOException {
-		String exit_path = "images/dinamic/changed_"+path;
-		InputStream originalStream = new FileInputStream("images/dinamic/"+path);
+		String exit_path = "src/main/resources/images/dinamic/changed_"+getPath();
+		InputStream originalStream = new FileInputStream("src/main/resources/images/dinamic/"+getPath());
 		OutputStream outStream = new FileOutputStream(exit_path);
 		ImageIO.setUseCache(false);
 		BufferedImage image = null;
