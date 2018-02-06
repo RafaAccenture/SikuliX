@@ -158,7 +158,7 @@ public class SearchClientWindow extends PrimalWindow{
 				exit = true;
 			}
 		} catch (FindFailed e) {
-			throw e;
+			throw e;//salimos de la ventana
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			exit = false;

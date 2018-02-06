@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Queue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.sikuli.script.FindFailed;
@@ -14,18 +15,18 @@ import org.sikuli.script.Screen;
 
 import model.UserAmdocs;
 import tools.ExcelReader;
-import tools.SubThread;
+import tools.Producer;
 import tools.objects.MyRow;
 import windows.SearchClientWindow;
 
 public class ManagerScheduler {
 	private enum Actions{
-		GETUSER("inicializo usuario"),
-		SEARCHCLIENT("SearchClient"),
-		CLOSEWINDOW("cierra ventanas"),
+		GETUSER("inicializar usuario"),
+		SEARCHCLIENT("Busqueda de cliente"),
+		CLOSEWINDOW("cerrar ventanas"),
 		CENTRALPAGEINTERACTION("pagina central iteraccion(menu para gestionar un cliente)"),
 		WORKORDERSONE("Ordenes de trabajo 1 de 2"),
-		PAUSE("Paramos la lectura");
+		PAUSE("Parar la lectura");
 		
 		private final String text;
 	
@@ -46,10 +47,12 @@ public class ManagerScheduler {
 	};
 	private String currectAction;
 	private Screen s;
-	private SubThread subThread;
 	private List<MyRow> myRows;
 	private UserAmdocs myUser;
-
+	
+    static private Semaphore semaphore = new Semaphore(0);
+    static private Semaphore mutex = new Semaphore(1);
+    private Producer ThreadProducer;
 	
 
 	
@@ -66,67 +69,54 @@ public class ManagerScheduler {
 		TimeUnit.MILLISECONDS.sleep(1000);
 		boolean correct = false;
 		Queue<Queue<String>> q = current.getInput();
-		int pos = 0,cont = 0;
+		int pos = 0, numErr = 0;
+		this.ThreadProducer = new Producer(semaphore, mutex);
 		while(!q.isEmpty()){
 			Queue<String> Original = new LinkedList<String>(q.poll());			
 			Queue<String> tmp = new LinkedList<String>(Original);
+			String action = current.getAction(pos).toUpperCase();
 			do {//mientras se descubra un error se sigue ejecutando hasta 3 veces
 				try {
-					if(!this.subThread.isAlive()) {
-						this.subThread = new SubThread();
-						this.subThread.start();//empieza el hilo de comprobación de popUps
-					}else {
-						if(this.subThread.isError())
-							this.subThread.setError(false);
-					}
-					System.out.print("ventana de ");
-					switch(Actions.valueOf(current.getAction(pos).toUpperCase())) {
-						case GETUSER:
-							System.out.println("Inicializacion de usuario");
-							System.out.println("---------------------------------");
+
+					System.out.print("Accion de " +Actions.valueOf(action).toString());
+					System.out.println("---------------------------------");
+					switch(Actions.valueOf(action)) {
+						case GETUSER:							
 							setMyUser(tmp);
 							correct = true;
 							break;
-						case SEARCHCLIENT:
-							System.out.println("Busqueda de cliente");
-							System.out.println("---------------------------------");	
+						case SEARCHCLIENT:	
 							SearchClientWindow scw = new SearchClientWindow();
 							correct = scw.start(tmp);
 							break;
 						case CENTRALPAGEINTERACTION:
-							System.out.println("Pagina central de iteraccion");	
-							System.out.println("---------------------------------");
 							//correct = centralPageIteration(tmp);
 							break;
 						case WORKORDERSONE:
-							System.out.println("Orden de trabajo 1 de 2");
-							System.out.println("---------------------------------");
 							//correct = workOrderOne(tmp);
 							break;
-
+							
 						default: 
-							System.out.println("Acción no contemplada");
+							System.err.println("Acción no contemplada");
 							correct = true;	
 					}
 					
-				    if (this.subThread.isError())
-				        throw new Exception("se detectó un error interno durante la ejecucion");
 				} catch (FindFailed e) {
-					cont++;
-					System.out.println("Fallo en la tarea "+current.getAction(pos)+"\tcontador="+cont);
+					numErr++;
+					System.out.println("Fallo en la tarea "+current.getAction(pos)+"\tErrores registrados: "+numErr);
 				} catch (Exception e) {
-					this.subThread.setError(false);
 					System.err.println(e+" durante la tarea "+current.getAction(pos));
 				}
-			}while( (!correct) && cont < 3);
-
-			if(cont >= 3)
+			}while( (!correct) && numErr < 3);
+			
+			if(numErr >= 3)
 				System.err.println("La instrucción '"+current.getAction(pos)+"' ha fallado demasiadas veces y queda descartada.");
-			cont = 0;
+			numErr = 0;
 			pos++;
 			
-			this.subThread.setEnd(true);//finalizamos el hilo que controla los errores
 		}
+		ThreadProducer.setEnd(true);//terminamos el producer
+		System.out.println("El caso de uso ha reportado "+ThreadProducer.getCounter()+" errores");
 	}
 	/****************************************************************
 	 * 						Parte pública
@@ -140,7 +130,6 @@ public class ManagerScheduler {
  		ExcelReader er = new ExcelReader();
  		//volcamos el excel
 		this.myRows = er.readBooksFromExcelFile("files/pruebas.xlsx");
-		this.subThread = new SubThread();
  	}
  	public void ShowExcelContent() {
  		System.out.println(this.myRows);

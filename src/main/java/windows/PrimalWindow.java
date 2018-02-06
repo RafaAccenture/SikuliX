@@ -187,7 +187,8 @@ public class PrimalWindow {
 	 * @throws FindFailed
 	 */
 	protected void closeWindow(int iterations, int timeBetween) throws FindFailed {
-		final Pattern closeWindow = new Pattern(getRepoPath()+"closeWindowButton.PNG").similar(0.95f);
+		String path = "src/main/resources/images/";
+		final Pattern closeWindow = new Pattern(path+"closeWindowButton.PNG").similar(0.95f);
 		while(iterations>0) {
 			waitInMilisecs(timeBetween);
 			if(WaitFor("Cerrando la ventana numero "+iterations,
@@ -199,7 +200,7 @@ public class PrimalWindow {
 				{
 					put(closeWindow,true);
 				}}))
-				this.myScreen.click("images/closeWindowButton.png");
+				this.myScreen.click(path+"closeWindowButton.png");
 			else
 				
 		iterations--;
