@@ -55,7 +55,11 @@ public class ManagerScheduler {
     private Producer ThreadProducer;
 	
 
-	
+	@SuppressWarnings("resource")
+	private void pause() {
+		 System.out.println("Pulsa cualquier tecla para continuar...");
+         new java.util.Scanner(System.in).nextLine();
+	}
 	/**
 	 * Manejador de opciones usando un switch
 	 * @param current
@@ -79,11 +83,10 @@ public class ManagerScheduler {
 				try {
 
 					System.out.print("Accion de " +Actions.valueOf(action).toString());
-					System.out.println("---------------------------------");
+					System.out.println("\n---------------------------------");
 					switch(Actions.valueOf(action)) {
 						case GETUSER:							
-							setMyUser(tmp);
-							correct = true;
+							correct = setMyUser(tmp);
 							break;
 						case SEARCHCLIENT:	
 							SearchClientWindow scw = new SearchClientWindow();
@@ -91,11 +94,16 @@ public class ManagerScheduler {
 							break;
 						case CENTRALPAGEINTERACTION:
 							//correct = centralPageIteration(tmp);
+							correct = true;
 							break;
 						case WORKORDERSONE:
 							//correct = workOrderOne(tmp);
+							correct = true;
 							break;
-							
+						case PAUSE:
+							pause();
+							correct = true;
+							break;
 						default: 
 							System.err.println("Acción no contemplada");
 							correct = true;	
@@ -154,11 +162,12 @@ public class ManagerScheduler {
 	public UserAmdocs getMyUser() {
 		return myUser;
 	}
-	public void setMyUser(Queue<String> tmp) {
+	public boolean setMyUser(Queue<String> tmp) {
 		String name = tmp.poll();
 		String rol = tmp.poll();
 		UserAmdocs ua = new UserAmdocs(name,rol);
 		this.myUser = ua;
-		System.out.println("Login con "+name+" tuyo rol es "+rol);
+		System.out.println("Login con "+name+" con rol '"+rol+"'");
+		return ( this.myUser != null );
 	}
 }

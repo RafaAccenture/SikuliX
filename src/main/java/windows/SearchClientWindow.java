@@ -58,7 +58,21 @@ public class SearchClientWindow extends PrimalWindow{
 		
 		waitInMilisecs(1000);
 	}
-	private void findClient(Queue<String> tmp) throws Exception {
+	private boolean existUser() {
+		final Pattern MessageError = new Pattern(getRepoPath()+"popups/MessageError.PNG").similar(0.95f);
+		//se comprueba durante 5 segundos
+		return (WaitFor("Comprobando si existe cliente bajo el criterio de busqueda designado",
+				new HashMap<Pattern, Boolean>() {/**
+			 * busca si esta el boton de cerrar ventana
+			 */
+			private static final long serialVersionUID = 1L;
+
+		{
+			put(MessageError,true);
+		}},5));
+	}
+	private boolean findClient(Queue<String> tmp) throws Exception {
+		boolean exit = false;
 		Location loc = null;
 		final Pattern errorFinderButtons = new Pattern(getRepoPath()+"errorFinderButtons.PNG").similar(0.95f);
 		//emula barra de carga para el formulario de busqueda
@@ -69,8 +83,8 @@ public class SearchClientWindow extends PrimalWindow{
 				private static final long serialVersionUID = 1L;
 
 			{
-				put(errorFinderButtons,true);
-			}})) {
+				put(errorFinderButtons,false);
+			}},60)) {
 			loc = getMyScreen().findBest(getRepoPath()+"clearButton.png").getTarget();
 			getMyScreen().click(loc);
 		}else
@@ -99,25 +113,26 @@ public class SearchClientWindow extends PrimalWindow{
 		
 		//emula barra de carga para la busqueda en la base de datos de un cliente
 		final Pattern findButtonLoading = new Pattern(getRepoPath()+"findButtonLoading.png").similar(0.95f);
-		final Pattern ClientMenuCheck = new Pattern(getRepoPath()+"ClientMenuCheck.PNG").similar(0.95f);
+		final Pattern findResultsCheck = new Pattern(getRepoPath()+"findResultsCheck.PNG").similar(0.95f);
 		
-		System.out.print("Buscando en la base de datos");
-		if(WaitFor("Buscando en la base de datos",
-				new HashMap<Pattern, Boolean>() {/**
-					 * busca si esta el boton de cerrar ventana
-					 */
-					private static final long serialVersionUID = 1L;
-
-				{
-					put(ClientMenuCheck,false);
-					put(findButtonLoading,true);
-				}})) 
-		{
-				loc = getMyScreen().findBest(getRepoPath()+"clearButton.png").getTarget();
-				getMyScreen().click(loc);
+		if(existUser()) {
+			if(WaitFor("Buscando en la base de datos",
+					new HashMap<Pattern, Boolean>() {/**
+						 * busca si esta el boton de cerrar ventana
+						 */
+						private static final long serialVersionUID = 1L;
+	
+					{
+						put(findResultsCheck,true);
+						put(findButtonLoading,false);
+					}},50)) 
+			{
+					exit = true;
 		}else
 				throw new Exception("timeout para busqueda en la base de datos");//se lanza excepcion por timeout de la espera
 
+		}	
+		return exit;
 	}
 	/**
 	 * Busca un cliente en el formulario y lo selecciona para pasar a su pagina principal de iteraccion
@@ -126,14 +141,12 @@ public class SearchClientWindow extends PrimalWindow{
 	 * @throws FindFailed 
 	 */
 	private boolean selectClient(Queue<String> tmp) throws FindFailed {
-		Location loc = null;
 		Match m = null;
 		boolean exit = false;
 
 		try {
 			openWindow();	
-			findClient(tmp);
-			if(getMyScreen().exists("src/main/resources/images/PopUps/Message.png") != null) {
+			if(!findClient(tmp)) {
 				screenShot("__NO__ENCONTRADO");
 				//en caso de no existir cliente
 				waitInMilisecs(1000);
@@ -147,11 +160,10 @@ public class SearchClientWindow extends PrimalWindow{
 				screenShot("__ENCONTRADO");
 				System.out.println("\n\n¡Busqueda de cliente realizada correctamente!\n");
 				m = getMyScreen().findBest(getRepoPath()+"ClientMenuCheck.PNG");
-
 				final Pattern selectClientButtonOff= new Pattern(getRepoPath()+"selectClientButtonOff.png").similar(0.95f);
 				//comprobamos si se ha cargado bien el boton de seleccionar
 				do {
-					m.below().findBest("images/CheckCircle.PNG").click();
+					m.below().findBest("src/main/resources/images/CheckCircle.PNG").click();
 					TimeUnit.MILLISECONDS.sleep(3000);
 				} while(getMyScreen().exists(selectClientButtonOff) != null);
 				getMyScreen().click(getRepoPath()+"selectClientButton.PNG");
@@ -163,7 +175,6 @@ public class SearchClientWindow extends PrimalWindow{
 			// TODO Auto-generated catch block
 			exit = false;
 			System.err.println(e);
-		}finally {
 		}
 		return exit;
 	}
@@ -183,14 +194,15 @@ public class SearchClientWindow extends PrimalWindow{
 	 * Dada una accion selecciona la ejecucion apropiada
 	 * @param tmp
 	 * @return
-	 * @throws FindFailed 
+	 * @throws Exception 
 	 */
-	public boolean start(Queue<String> tmp) throws FindFailed {
+	public boolean start(Queue<String> tmp) throws Exception {
 		boolean correct = false;
 		String ta = tmp.poll();//tipo de acción	
 		System.out.print("accion de ");
 		switch(SearchClientActions.valueOf(ta.toUpperCase())) {
 			case SELECTCLIENT:
+				setSourceAction("SELECTCLIENT");
 				System.out.println("\tselecionar cliente");
 				System.out.println("\t---------------------------------");	
 				correct = selectClient(tmp);

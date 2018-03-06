@@ -93,8 +93,9 @@ public class PrimalWindow {
 				);
 		if(clickAll) {
 			System.out.println("click multiple");			
-			p = new Pattern(modPath).similar(0.70f);
+			p = new Pattern(modPath).similar(0.65f);
 			m = this.myScreen.findBest(p);
+
 			System.out.println(m.getScore());
 			Iterator<Match> myIt = myScreen.findAll(p);
 			while (myIt.hasNext()) {
@@ -144,28 +145,32 @@ public class PrimalWindow {
 	 * @param label : etiqueta a mostrar por la carga
 	 * @param references : patrones de imagen referencia a buscar </br>
 	 * para el valor en el Map: <i>True si se ejecuta mientras no exista (== null) y False mientras que si (!= null)</i>
+	 * @param timeMax : especifica el tiempo de espera para cada pattern * 2. Ej: 40 = 20 segundos
 	 * @return false cuando ha tardado demasidado tiempo </br>true cuando no hay fallos
 	 */
-	protected boolean WaitFor(String label,Map<Pattern,Boolean> references) {
-		int cont = 0,max = 80*references.size(); //40 segundos por cada imagen a buscar maximo
+	protected boolean WaitFor(String label,Map<Pattern,Boolean> references,int timeMax) {
+		int cont = 0,max = timeMax*references.size(); //40 segundos por cada imagen a buscar maximo
 		System.out.println(label);
 		for (Map.Entry<Pattern,Boolean> entry : references.entrySet())
 		{
-			System.out.println("wait for de "+entry.getKey().getFilename());
+			System.out.println("\nchequeando pattern de "+entry.getKey().getFilename()+"\n");
 			if(entry.getValue()) {
-				while(this.myScreen.exists(entry.getKey().getFilename()) == null || cont < max) {
+				System.out.print("Mientras no exista espero");
+				while(this.myScreen.exists(entry.getKey()) == null && cont < max) {
 					System.out.print(".");
 					cont++;
 					waitInMilisecs(500);
 				}
 			}else {
-				while(this.myScreen.exists(entry.getKey().getFilename()) != null || cont < max) {
+				System.out.print("Mientras exista espero");
+				while(this.myScreen.exists(entry.getKey()) != null && cont < max) {
 					System.out.print(".");
 					cont++;
 					waitInMilisecs(500);
 				}				
 			}
 		}
+		System.out.println();
 		return cont < (max+1);
 	}
 	
@@ -199,7 +204,7 @@ public class PrimalWindow {
 
 				{
 					put(closeWindow,true);
-				}}))
+				}},80))
 				this.myScreen.click(path+"closeWindowButton.png");
 			else
 				
