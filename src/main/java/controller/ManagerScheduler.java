@@ -17,6 +17,7 @@ import model.UserAmdocs;
 import tools.ExcelReader;
 import tools.Producer;
 import tools.objects.MyRow;
+import windows.CentralPageInteractionWindow;
 import windows.SearchClientWindow;
 
 public class ManagerScheduler {
@@ -93,8 +94,8 @@ public class ManagerScheduler {
 							correct = scw.start(tmp);
 							break;
 						case CENTRALPAGEINTERACTION:
-							//correct = centralPageIteration(tmp);
-							correct = true;
+							CentralPageInteractionWindow cpw = new CentralPageInteractionWindow();
+							correct = cpw.start(tmp);
 							break;
 						case WORKORDERSONE:
 							//correct = workOrderOne(tmp);

@@ -30,6 +30,7 @@ import model.UserAmdocs;
 import tools.DinamicImg;
 
 public class PrimalWindow {
+	final private Pattern generalWait = new Pattern("src/main/resources/images/generalWait.PNG").similar(0.95f);
 	private Screen myScreen;
 	private List<Pattern> references;
 	private List<Object> data;
@@ -294,5 +295,8 @@ public class PrimalWindow {
 
 	public void setUserLogged(UserAmdocs userLogged) {
 		this.userLogged = userLogged;
+	}
+	public Pattern getGeneralWait() {
+		return generalWait;
 	}
 }

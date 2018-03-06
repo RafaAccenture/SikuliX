@@ -63,6 +63,7 @@ public class ExcelReader {
         }
 		return values;
 	}
+	@SuppressWarnings("deprecation")
 	private Object getCellValue(Cell cell) {
 	    switch (cell.getCellType()) {
 	    case Cell.CELL_TYPE_STRING:
