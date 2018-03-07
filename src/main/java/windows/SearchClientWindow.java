@@ -84,54 +84,55 @@ public class SearchClientWindow extends PrimalWindow{
 
 			{
 				put(errorFinderButtons,false);
-			}},60)) {
+			}},100)) {
 			loc = getMyScreen().findBest(getRepoPath()+"clearButton.png").getTarget();
 			getMyScreen().click(loc);
+
+
+			getMyScreen().keyDown(Key.SHIFT);
+			//nos situamos en el principio del formulario
+			for(int i = 0;i<17;i++)
+				getMyScreen().type(Key.TAB);
+			getMyScreen().keyUp(Key.SHIFT);
+			//descomponemos el string con los campos del formulario de búsqueda
+			while(!tmp.isEmpty()) {
+				String s = tmp.poll();
+				String[] parts = s.split("\\$");
+				if(parts.length > 1)
+					getMyScreen().paste(parts[1]);
+				getMyScreen().type(Key.TAB);
+			}
+			
+			loc = getMyScreen().find(getRepoPath()+"FindButton.png").getTarget();
+
+			getMyScreen().click(loc);
+			loc.x+=90;
+			getMyScreen().click(loc);//desplazo a la derecha el raton apara quitar la vista hover en el boton de busqueda
+			
+			//emula barra de carga para la busqueda en la base de datos de un cliente
+			final Pattern findButtonLoading = new Pattern(getRepoPath()+"findButtonLoading.png").similar(0.95f);
+			final Pattern findResultsCheck = new Pattern(getRepoPath()+"findResultsCheck.PNG").similar(0.95f);
+			
+			if(existUser()) {
+				if(WaitFor("Buscando en la base de datos",
+						new HashMap<Pattern, Boolean>() {/**
+							 * busca si esta el boton de cerrar ventana
+							 */
+							private static final long serialVersionUID = 1L;
+		
+						{
+							put(findResultsCheck,true);
+							put(findButtonLoading,false);
+						}},50)) 
+				{
+						exit = true;
+			}else
+					throw new Exception("timeout para busqueda en la base de datos");//se lanza excepcion por timeout de la espera
+
+			}	
 		}else
 			throw new Exception("timeout para errorFinderButtons");//se lanza excepcion por timeout de la espera
 
-
-		getMyScreen().keyDown(Key.SHIFT);
-		//nos situamos en el principio del formulario
-		for(int i = 0;i<17;i++)
-			getMyScreen().type(Key.TAB);
-		getMyScreen().keyUp(Key.SHIFT);
-		//descomponemos el string con los campos del formulario de búsqueda
-		while(!tmp.isEmpty()) {
-			String s = tmp.poll();
-			String[] parts = s.split("\\$");
-			if(parts.length > 1)
-				getMyScreen().paste(parts[1]);
-			getMyScreen().type(Key.TAB);
-		}
-		
-		loc = getMyScreen().find(getRepoPath()+"FindButton.png").getTarget();
-
-		getMyScreen().click(loc);
-		loc.x+=90;
-		getMyScreen().click(loc);//desplazo a la derecha el raton apara quitar la vista hover en el boton de busqueda
-		
-		//emula barra de carga para la busqueda en la base de datos de un cliente
-		final Pattern findButtonLoading = new Pattern(getRepoPath()+"findButtonLoading.png").similar(0.95f);
-		final Pattern findResultsCheck = new Pattern(getRepoPath()+"findResultsCheck.PNG").similar(0.95f);
-		
-		if(existUser()) {
-			if(WaitFor("Buscando en la base de datos",
-					new HashMap<Pattern, Boolean>() {/**
-						 * busca si esta el boton de cerrar ventana
-						 */
-						private static final long serialVersionUID = 1L;
-	
-					{
-						put(findResultsCheck,true);
-						put(findButtonLoading,false);
-					}},50)) 
-			{
-					exit = true;
-		}else
-				throw new Exception("timeout para busqueda en la base de datos");//se lanza excepcion por timeout de la espera
-
-		}	
 		return exit;
 	}
 	/**

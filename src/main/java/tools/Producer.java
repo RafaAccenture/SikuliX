@@ -10,7 +10,7 @@ public class Producer extends Thread {
 	public Producer(Semaphore semaphore,Semaphore mutex) {
 		this.semaphore=semaphore;
 		this.mutex=mutex;
-		this.end = false;
+		setEnd(false);
 	}
     public void run() {
 

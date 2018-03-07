@@ -14,6 +14,7 @@ import org.sikuli.script.FindFailed;
 import org.sikuli.script.Screen;
 
 import model.UserAmdocs;
+import tools.Consumer;
 import tools.ExcelReader;
 import tools.Producer;
 import tools.objects.MyRow;
@@ -75,7 +76,12 @@ public class ManagerScheduler {
 		boolean correct = false;
 		Queue<Queue<String>> q = current.getInput();
 		int pos = 0, numErr = 0;
+		//tratamiento de errores
 		this.ThreadProducer = new Producer(semaphore, mutex);
+		this.ThreadProducer.start();
+		Consumer consumer = new Consumer(semaphore, mutex);
+		consumer.start();
+		//----------------------
 		while(!q.isEmpty()){
 			Queue<String> Original = new LinkedList<String>(q.poll());			
 			Queue<String> tmp = new LinkedList<String>(Original);
@@ -117,7 +123,8 @@ public class ManagerScheduler {
 					System.err.println(e+" durante la tarea "+current.getAction(pos));
 				}
 			}while( (!correct) && numErr < 3);
-			
+			consumer.setOnOff(false);
+			this.ThreadProducer.setEnd(true);
 			if(numErr >= 3)
 				System.err.println("La instrucción '"+current.getAction(pos)+"' ha fallado demasiadas veces y queda descartada.");
 			numErr = 0;
