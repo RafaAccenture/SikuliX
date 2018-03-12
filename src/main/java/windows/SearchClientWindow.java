@@ -165,7 +165,7 @@ public class SearchClientWindow extends PrimalWindow{
 				//comprobamos si se ha cargado bien el boton de seleccionar
 				do {
 					m.below().findBest("src/main/resources/images/CheckCircle.PNG").click();
-					TimeUnit.MILLISECONDS.sleep(3000);
+					waitInMilisecs(3000);
 				} while(getMyScreen().exists(selectClientButtonOff) != null);
 				getMyScreen().click(getRepoPath()+"selectClientButton.PNG");
 				exit = true;

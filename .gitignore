@@ -1,6 +1,7 @@
 target/
 files/
-src/main/resources
+logs/
+src/main/resources/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup

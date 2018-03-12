@@ -56,21 +56,32 @@ public class CentralPageInteractionWindow extends PrimalWindow{
 					put(getGeneralWait(),true);
 				}},30)) {
 				
-			}else {
-				exit = false;
-				throw new Exception("timeout para cargando ventana de la pagina");//se lanza excepcion por timeout de la espera
-			}
+				screenShot("__INFO");
+				
+				getMyScreen().click(getRepoPath()+"gestionComercial.PNG");
+				waitInMilisecs(9000);
+				getMyScreen().click(getRepoPath()+"gestionComercial_ordenTrabajo.PNG");
+				
+				final Pattern SelectAnOption = new Pattern("src/main/resources/images/PopUps/SelectAnOption.PNG").similar(0.95f);
+				//Emula la barra de carga para chequear si se pide confirmacion 
+				if(WaitFor("Esperamos por si pide confirmacion de seleccionar una opcion",
+						new HashMap<Pattern, Boolean>() {/**
+							 * busca si esta el boton de cerrar ventana
+							 */
+							private static final long serialVersionUID = 1L;
 
-			screenShot("__INFO");
-			
-			getMyScreen().click(getRepoPath()+"gestionComercial.PNG");
-			TimeUnit.MILLISECONDS.sleep(10000);
-			getMyScreen().click(getRepoPath()+"gestionComercial_ordenTrabajo.PNG");
-			exit = true;
-		} catch (FindFailed e) {
+						{
+							put(SelectAnOption,true);
+							put(getGeneralWait(),true);
+						}},3)) {
+					getMyScreen().click("src/main/resources/images/PopUps/SelectAnOption_yes.PNG");
+					}else
+						System.out.println("Salida sin confirmacion");
+				exit = true;
+			}else
+				throw new Exception("timeout para cargando ventana de la pagina");//se lanza excepcion por timeout de la espera
+		} catch (Exception e) {
 			exit = false;
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		return exit;
 	}

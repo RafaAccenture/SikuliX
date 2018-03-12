@@ -6,6 +6,7 @@ import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 import org.sikuli.script.FindFailed;
+import org.sikuli.script.Location;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Screen;
 
@@ -37,33 +38,41 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 		}
 	};
 	
-	private boolean altaMovil(Queue<String> tmp) throws Exception {
+	private boolean altaMovil(Queue<String> tmp) {
 		boolean exit = false;
 		final Pattern checkLoad1 = new Pattern(getRepoPath()+"checkLoad1.png").similar(0.95f);
-		final Pattern checkLoad2 = new Pattern(getRepoPath()+"checkLoad2.png").similar(0.95f);
-		System.out.print("Cargando las ordenes de trabajo 1 de 2");
-		//emula barra de carga de la ventana en sí
-		if(WaitFor("cargando ventana de la pagina principal de interaccion",
-			new HashMap<Pattern, Boolean>() {/**
-				 * Comprueba si ha cargado ya toda la interfaz de la ventana
-				 */
-				private static final long serialVersionUID = 1L;
-
-			{
-				put(checkLoad1,true);
-				put(checkLoad2,true);
-				put(getGeneralWait(),true);
-			}},40)) {
-			getMyScreen().find(getRepoPath()+"addHalfButton.png").click();
-			screenShot("__INFO");
-			exit = true;
-		}else {
-			throw new Exception("timeout para cargando ventana de la pagina Orden de trabajo 1 de 2");//se lanza excepcion por timeout de la espera
+		final Pattern checkLoad2 = new Pattern(getRepoPath()+"TitleLabel.PNG").similar(0.95f);
+		try {
+			//emula barra de carga de la ventana en sí
+			if(WaitFor("cargando ventana de las ordenes de trabajo 1 de 2",
+				new HashMap<Pattern, Boolean>() {/**
+					 * Comprueba si ha cargado ya toda la interfaz de la ventana
+					 */
+					private static final long serialVersionUID = 1L;
+	
+				{
+					put(checkLoad1,true);
+					put(checkLoad2,true);
+					put(getGeneralWait(),true);
+				}},40)) {
+				
+				getMyScreen().find(getRepoPath()+"Services_MovilOption.PNG").click();
+				getMyScreen().find(getRepoPath()+"addHalfButton.png").click();
+				waitInMilisecs(1000);
+				Location loc= getMyScreen().find(getRepoPath()+"movil/PhoneLineMenu.PNG").getCenter();
+				loc.click();
+				loc.y += 50;
+				loc.click();
+				getMyScreen().find(getRepoPath()+"movil/Accept_option.PNG").click();
+				screenShot("__INFO");
+				exit = true;
+			}else {
+	
+					throw new Exception("timeout para cargando ventana de la pagina Orden de trabajo 1 de 2");
+			}
+		} catch (Exception e) {
+			exit = false;
 		}
-		
-
-		
-		
 
 		return exit;
 	}

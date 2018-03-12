@@ -19,7 +19,9 @@ import tools.ExcelReader;
 import tools.Producer;
 import tools.objects.MyRow;
 import windows.CentralPageInteractionWindow;
+import windows.PrimalWindow;
 import windows.SearchClientWindow;
+import windows.WorkOrdenOneWindow;
 
 public class ManagerScheduler {
 	private enum Actions{
@@ -104,8 +106,14 @@ public class ManagerScheduler {
 							correct = cpw.start(tmp);
 							break;
 						case WORKORDERSONE:
-							//correct = workOrderOne(tmp);
-							correct = true;
+							WorkOrdenOneWindow wow = new WorkOrdenOneWindow();
+							correct = wow.start(tmp);
+							break;
+						case CLOSEWINDOW:
+							PrimalWindow pw = new PrimalWindow();
+							int iterations = Integer.parseInt(tmp.poll());
+							int timeBetween = Integer.parseInt(tmp.poll());
+							pw.closeWindow(iterations, timeBetween);
 							break;
 						case PAUSE:
 							pause();
@@ -118,13 +126,14 @@ public class ManagerScheduler {
 					
 				} catch (FindFailed e) {
 					numErr++;
+					correct = false;
 					System.out.println("Fallo en la tarea "+current.getAction(pos)+"\tErrores registrados: "+numErr);
 				} catch (Exception e) {
+					numErr++;
+					correct = false;
 					System.err.println(e+" durante la tarea "+current.getAction(pos));
 				}
 			}while( (!correct) && numErr < 3);
-			consumer.setOnOff(false);
-			this.ThreadProducer.setEnd(true);
 			if(numErr >= 3)
 				System.err.println("La instrucción '"+current.getAction(pos)+"' ha fallado demasiadas veces y queda descartada.");
 			numErr = 0;
@@ -132,6 +141,7 @@ public class ManagerScheduler {
 			
 		}
 		ThreadProducer.setEnd(true);//terminamos el producer
+		consumer.setOnOff(false);
 		System.out.println("El caso de uso ha reportado "+ThreadProducer.getCounter()+" errores");
 	}
 	/****************************************************************

@@ -37,10 +37,13 @@ public class Consumer extends Thread{
 		try {
 			semaphore.acquire();
 			mutex.acquire();
+			setOnOff(true);
+			System.out.println("El consumidor cierra semaforo");
 	    	while(isOn()) {
 	    		checkInternalError();
 	    	}
 	    	mutex.release();
+	    	System.out.println("El consumidor abre semaforo");
 	        Thread.sleep(500);
 		}catch (InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -68,6 +71,10 @@ public class Consumer extends Thread{
 		return on;
 	}
 	public void setOnOff(boolean on) {
+		if(on)
+			System.out.println("se enciende el consumidor");
+		else
+			System.out.println("Se apaga el consumidor");
 		this.on = on;
 	}	
 }

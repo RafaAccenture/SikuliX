@@ -186,13 +186,17 @@ public class PrimalWindow {
 			e.printStackTrace();
 		}
 	}
+
+	/*	-------------------------------------------------
+	 * 					ZONA PUBLICA
+	 	-------------------------------------------------*/
 	/**
 	 * Busca el icono de cierre y cierra la ventana n veces según el número de iteraciones especificadas
 	 * @param iterations
 	 * @param timeBetween
 	 * @throws FindFailed
 	 */
-	protected void closeWindow(int iterations, int timeBetween) throws FindFailed {
+	public void closeWindow(int iterations, int timeBetween) throws FindFailed {
 		String path = "src/main/resources/images/";
 		final Pattern closeWindow = new Pattern(path+"closeWindowButton.PNG").similar(0.95f);
 		while(iterations>0) {
@@ -212,9 +216,6 @@ public class PrimalWindow {
 		iterations--;
 		}
 	}
-	/*	-------------------------------------------------
-	 * 					ZONA PUBLICA
-	 	-------------------------------------------------*/
 	/**
 	 * Contructor de PrimalWindow vacío
 	 */
