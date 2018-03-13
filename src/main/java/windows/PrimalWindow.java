@@ -14,14 +14,17 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
 import org.sikuli.script.FindFailed;
 import org.sikuli.script.ImagePath;
+import org.sikuli.script.Location;
 import org.sikuli.script.Match;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Screen;
@@ -37,7 +40,7 @@ public class PrimalWindow {
 	private UserAmdocs userLogged;
 	private String repoPath;
 	private String sourceAction;
-	
+	private Queue<Location> nextWindowScript;
 	/*	-------------------------------------------------
 	 * 					ZONA PRIVADA
 	 	-------------------------------------------------*/
@@ -172,7 +175,7 @@ public class PrimalWindow {
 			}
 		}
 		System.out.println();
-		return cont < (max+1);
+		return cont < max;
 	}
 	
 	/**
@@ -209,11 +212,15 @@ public class PrimalWindow {
 
 				{
 					put(closeWindow,true);
-				}},80))
-				this.myScreen.click(path+"closeWindowButton.png");
-			else
+				}},80)) {
+				getMyScreen().click(path+"closeWindowButton.png");
+				iterations--;
+			}else {
+				System.err.println("no se encuentra el botón de cerrar ventana");
+				break;
+			}
 				
-		iterations--;
+		
 		}
 	}
 	/**
@@ -222,6 +229,7 @@ public class PrimalWindow {
 	public PrimalWindow() {
 		this.myScreen = new Screen();
 		this.repoPath = "src/main/resources/images/";
+		this.nextWindowScript= new LinkedList<Location>();
 	}
 	
 	/**
@@ -233,13 +241,14 @@ public class PrimalWindow {
 	 * @param sourceAction
 	 */
 	public PrimalWindow(Screen myScreen, List<Pattern> references, List<Object> data,
-			UserAmdocs userLogged, String sourceAction) {
+			UserAmdocs userLogged, String sourceAction,Queue<Location> locs) {
 		this.myScreen = myScreen;
 		this.references = references;
 		this.data = data;
 		this.repoPath = "src/main/resources/images/";
 		this.sourceAction = sourceAction;
 		this.userLogged = userLogged;
+		this.nextWindowScript = locs;
 	}
 	
 
@@ -299,5 +308,11 @@ public class PrimalWindow {
 	}
 	public Pattern getGeneralWait() {
 		return generalWait;
+	}
+	public Queue<Location> getNextWindowScript() {
+		return nextWindowScript;
+	}
+	public void setNextWindowScript(Queue<Location> nextWindowScript) {
+		this.nextWindowScript = nextWindowScript;
 	}
 }

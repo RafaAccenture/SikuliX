@@ -3,9 +3,6 @@ package windows;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.TimeUnit;
-
-import org.sikuli.script.FindFailed;
 import org.sikuli.script.Location;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Screen;
@@ -84,8 +81,8 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 		setRepoPath(getRepoPath()+"windows/workOrdersOne/");
 	}
 	public WorkOrdenOneWindow(Screen myScreen, List<Pattern> references, List<Object> data, UserAmdocs userLogged,
-			String MyrepoPath, String sourceAction) {
-		super(myScreen, references, data, userLogged, sourceAction);
+			String MyrepoPath, String sourceAction,Queue<Location> nextWindowScript) {
+		super(myScreen, references, data, userLogged, sourceAction, nextWindowScript);
 		setRepoPath(getRepoPath()+"windows/workOrdersOne/");
 	}
 	/**

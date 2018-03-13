@@ -11,6 +11,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.sikuli.script.FindFailed;
+import org.sikuli.script.Location;
 import org.sikuli.script.Screen;
 
 import model.UserAmdocs;
@@ -53,12 +54,21 @@ public class ManagerScheduler {
 	private Screen s;
 	private List<MyRow> myRows;
 	private UserAmdocs myUser;
+	private Queue<Location> openWindowScript;
 	
     static private Semaphore semaphore = new Semaphore(0);
     static private Semaphore mutex = new Semaphore(1);
     private Producer ThreadProducer;
 	
-
+    private void runWindowScript() throws InterruptedException {
+    	for(Location loc : openWindowScript) {
+    		loc.click();
+    		TimeUnit.MILLISECONDS.sleep(1000);
+    	}
+    }
+	/**
+	 * Para la ejecución hasta recibir una entrada de teclado
+	 */
 	@SuppressWarnings("resource")
 	private void pause() {
 		 System.out.println("Pulsa cualquier tecla para continuar...");
@@ -75,7 +85,7 @@ public class ManagerScheduler {
 	 */
 	private void throwRow(MyRow current) throws InterruptedException, IOException, HeadlessException, AWTException {
 		TimeUnit.MILLISECONDS.sleep(1000);
-		boolean correct = false;
+		
 		Queue<Queue<String>> q = current.getInput();
 		int pos = 0, numErr = 0;
 		//tratamiento de errores
@@ -85,12 +95,17 @@ public class ManagerScheduler {
 		consumer.start();
 		//----------------------
 		while(!q.isEmpty()){
-			Queue<String> Original = new LinkedList<String>(q.poll());			
-			Queue<String> tmp = new LinkedList<String>(Original);
+			boolean correct = true;
+			Queue<String> Original = new LinkedList<String>(q.poll());
+
 			String action = current.getAction(pos).toUpperCase();
 			do {//mientras se descubra un error se sigue ejecutando hasta 3 veces
 				try {
-
+					if(!correct) {
+						System.out.println("Repetimos la interacción con la ventana");
+						runWindowScript();
+					}
+					Queue<String> tmp = new LinkedList<String>(Original);
 					System.out.print("Accion de " +Actions.valueOf(action).toString());
 					System.out.println("\n---------------------------------");
 					switch(Actions.valueOf(action)) {
@@ -100,17 +115,21 @@ public class ManagerScheduler {
 						case SEARCHCLIENT:	
 							SearchClientWindow scw = new SearchClientWindow();
 							correct = scw.start(tmp);
+							if(correct) setOpenWindowScript(scw.getNextWindowScript());
 							break;
 						case CENTRALPAGEINTERACTION:
 							CentralPageInteractionWindow cpw = new CentralPageInteractionWindow();
 							correct = cpw.start(tmp);
+							if(correct) setOpenWindowScript(cpw.getNextWindowScript());
 							break;
 						case WORKORDERSONE:
 							WorkOrdenOneWindow wow = new WorkOrdenOneWindow();
 							correct = wow.start(tmp);
+							if(correct) setOpenWindowScript(wow.getNextWindowScript());
 							break;
 						case CLOSEWINDOW:
 							PrimalWindow pw = new PrimalWindow();
+
 							int iterations = Integer.parseInt(tmp.poll());
 							int timeBetween = Integer.parseInt(tmp.poll());
 							pw.closeWindow(iterations, timeBetween);
@@ -127,11 +146,13 @@ public class ManagerScheduler {
 				} catch (FindFailed e) {
 					numErr++;
 					correct = false;
-					System.out.println("Fallo en la tarea "+current.getAction(pos)+"\tErrores registrados: "+numErr);
+					System.err.println("Fallo en la tarea "+current.getAction(pos)+"\tErrores registrados: "+numErr);
+					System.err.println(e);
 				} catch (Exception e) {
 					numErr++;
 					correct = false;
-					System.err.println(e+" durante la tarea "+current.getAction(pos));
+					System.err.println("Fallo en la tarea "+current.getAction(pos)+"\tErrores registrados: "+numErr);
+					System.err.println(e);
 				}
 			}while( (!correct) && numErr < 3);
 			if(numErr >= 3)
@@ -156,6 +177,7 @@ public class ManagerScheduler {
  		ExcelReader er = new ExcelReader();
  		//volcamos el excel
 		this.myRows = er.readBooksFromExcelFile("files/pruebas.xlsx");
+		this.openWindowScript = new LinkedList<Location>();
  	}
  	public void ShowExcelContent() {
  		System.out.println(this.myRows);
@@ -187,5 +209,11 @@ public class ManagerScheduler {
 		this.myUser = ua;
 		System.out.println("Login con "+name+" con rol '"+rol+"'");
 		return ( this.myUser != null );
+	}
+	public Queue<Location> getOpenWindowScript() {
+		return openWindowScript;
+	}
+	public void setOpenWindowScript(Queue<Location> queue) {
+		this.openWindowScript = queue;
 	}
 }

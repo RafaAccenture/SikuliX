@@ -3,9 +3,7 @@ package windows;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.TimeUnit;
-
-import org.sikuli.script.FindFailed;
+import org.sikuli.script.Location;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Screen;
 
@@ -39,6 +37,7 @@ public class CentralPageInteractionWindow extends PrimalWindow{
 	
 	private boolean accederOrdenesTrabajo(Queue<String> tmp) throws  Exception {
 		boolean exit = false;
+		Location loc;
 		try {
 			final Pattern menuCheckLoad = new Pattern(getRepoPath()+"menuCheckLoad.PNG").similar(0.95f);
 			final Pattern menuCheckLoad2 = new Pattern(getRepoPath()+"menuCheckLoad2.PNG").similar(0.95f);
@@ -57,11 +56,11 @@ public class CentralPageInteractionWindow extends PrimalWindow{
 				}},30)) {
 				
 				screenShot("__INFO");
-				
 				getMyScreen().click(getRepoPath()+"gestionComercial.PNG");
 				waitInMilisecs(9000);
-				getMyScreen().click(getRepoPath()+"gestionComercial_ordenTrabajo.PNG");
-				
+				loc = getMyScreen().find(getRepoPath()+"gestionComercial_ordenTrabajo.PNG").getTarget();
+				loc .click();
+				getNextWindowScript().add(loc);//guardamos en el script de inicio de ventana
 				final Pattern SelectAnOption = new Pattern("src/main/resources/images/PopUps/SelectAnOption.PNG").similar(0.95f);
 				//Emula la barra de carga para chequear si se pide confirmacion 
 				if(WaitFor("Esperamos por si pide confirmacion de seleccionar una opcion",
@@ -74,15 +73,20 @@ public class CentralPageInteractionWindow extends PrimalWindow{
 							put(SelectAnOption,true);
 							put(getGeneralWait(),true);
 						}},3)) {
-					getMyScreen().click("src/main/resources/images/PopUps/SelectAnOption_yes.PNG");
+					loc = getMyScreen().find("src/main/resources/images/PopUps/SelectAnOption_yes.PNG").getTarget();
+					getNextWindowScript().add(loc);//guardamos en el script de inicio de ventana
 					}else
 						System.out.println("Salida sin confirmacion");
 				exit = true;
-			}else
-				throw new Exception("timeout para cargando ventana de la pagina");//se lanza excepcion por timeout de la espera
+			}else {
+				exit = false;
+				System.out.println("timeout para la carga de la ventana");//se lanza excepcion por timeout de la espera
+			}
 		} catch (Exception e) {
 			exit = false;
 		}
+		if (!exit)
+			this.closeWindow(1, 0);
 		return exit;
 	}
 	/*	-------------------------------------------------
@@ -93,8 +97,8 @@ public class CentralPageInteractionWindow extends PrimalWindow{
 		setRepoPath(getRepoPath()+"windows/interactionCentralPage/");
 	}
 	public CentralPageInteractionWindow(Screen myScreen, List<Pattern> references, List<Object> data, UserAmdocs userLogged,
-			String MyrepoPath, String sourceAction) {
-		super(myScreen, references, data, userLogged, sourceAction);
+			String MyrepoPath, String sourceAction,Queue<Location> nextWindowScript) {
+		super(myScreen, references, data, userLogged, sourceAction, nextWindowScript);
 		setRepoPath(getRepoPath()+"windows/interactionCentralPage/");
 	}
 	/**

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.TimeUnit;
 
 import org.sikuli.script.FindFailed;
 import org.sikuli.script.Key;
@@ -61,7 +60,7 @@ public class SearchClientWindow extends PrimalWindow{
 	private boolean existUser() {
 		final Pattern MessageError = new Pattern(getRepoPath()+"popups/MessageError.PNG").similar(0.95f);
 		//se comprueba durante 5 segundos
-		return (WaitFor("Comprobando si existe cliente bajo el criterio de busqueda designado",
+		return !(WaitFor("Comprobando si existe cliente bajo el criterio de busqueda designado",
 				new HashMap<Pattern, Boolean>() {/**
 			 * busca si esta el boton de cerrar ventana
 			 */
@@ -114,7 +113,8 @@ public class SearchClientWindow extends PrimalWindow{
 			final Pattern findResultsCheck = new Pattern(getRepoPath()+"findResultsCheck.PNG").similar(0.95f);
 			
 			if(existUser()) {
-				if(WaitFor("Buscando en la base de datos",
+				exit = true;
+				if(!WaitFor("Buscando en la base de datos",
 						new HashMap<Pattern, Boolean>() {/**
 							 * busca si esta el boton de cerrar ventana
 							 */
@@ -124,9 +124,6 @@ public class SearchClientWindow extends PrimalWindow{
 							put(findResultsCheck,true);
 							put(findButtonLoading,false);
 						}},50)) 
-				{
-						exit = true;
-			}else
 					throw new Exception("timeout para busqueda en la base de datos");//se lanza excepcion por timeout de la espera
 
 			}	
@@ -167,7 +164,10 @@ public class SearchClientWindow extends PrimalWindow{
 					m.below().findBest("src/main/resources/images/CheckCircle.PNG").click();
 					waitInMilisecs(3000);
 				} while(getMyScreen().exists(selectClientButtonOff) != null);
-				getMyScreen().click(getRepoPath()+"selectClientButton.PNG");
+				Location loc = getMyScreen().find(getRepoPath()+"selectClientButton.PNG").getTarget();
+				loc.click();
+				//guardamos el 'script' para abrir la siguiente ventana en caso de error
+				getNextWindowScript().add(loc);
 				exit = true;
 			}
 		} catch (FindFailed e) {
@@ -187,8 +187,8 @@ public class SearchClientWindow extends PrimalWindow{
 		setRepoPath(getRepoPath()+"windows/findClient/");
 	}
 	public SearchClientWindow(Screen myScreen, List<Pattern> references, List<Object> data, UserAmdocs userLogged,
-			String MyrepoPath, String sourceAction) {
-		super(myScreen, references, data, userLogged, sourceAction);
+			String MyrepoPath, String sourceAction,Queue<Location> nextWindowScript) {
+		super(myScreen, references, data, userLogged, sourceAction, nextWindowScript);
 		setRepoPath(getRepoPath()+"windows/findClient/");
 	}
 	/**
