@@ -24,14 +24,13 @@ import javax.imageio.ImageIO;
 
 import org.sikuli.script.FindFailed;
 import org.sikuli.script.ImagePath;
-import org.sikuli.script.Location;
 import org.sikuli.script.Match;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Screen;
 
 import model.UserAmdocs;
 import tools.DinamicImg;
-
+ 
 public class PrimalWindow {
 	final private Pattern generalWait = new Pattern("src/main/resources/images/generalWait.PNG").similar(0.95f);
 	private Screen myScreen;
@@ -40,7 +39,8 @@ public class PrimalWindow {
 	private UserAmdocs userLogged;
 	private String repoPath;
 	private String sourceAction;
-	private Queue<Location> nextWindowScript;
+	private Pattern lastPatternConfirmed;
+	private Queue<Pattern> nextWindowScript;
 	/*	-------------------------------------------------
 	 * 					ZONA PRIVADA
 	 	-------------------------------------------------*/
@@ -56,6 +56,7 @@ public class PrimalWindow {
 			System.out.println("Delete operation is failed.");
 		}
 	}
+
 	/*	-------------------------------------------------
 	 * 					ZONA PROTEGIDA
 	 	-------------------------------------------------*/
@@ -114,7 +115,7 @@ public class PrimalWindow {
 			m.click();
 		}
 		removeFile(modPath);
-		ImagePath.reset();//limpia la caché interna de la librería
+		ImagePath.reset();//limpia la cachï¿½ interna de la librerï¿½a
 	}
 	
 	/**
@@ -133,13 +134,13 @@ public class PrimalWindow {
 			image = new Robot().createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
 		ImageIO.write(image, "png", new File("logs/"+getSourceAction()+note+"--"+dateFormat.format(date)+".png"));
 		} catch (HeadlessException e) {
-			System.err.println("\n ¡Teclado,raton o monitor no soportado!:\n");
+			System.err.println("\n ï¿½Teclado,raton o monitor no soportado!:\n");
 			e.printStackTrace();
 		} catch (AWTException e) {
-			System.err.println("\n ¡Fallo en windows Toolkit!\n");
+			System.err.println("\n ï¿½Fallo en windows Toolkit!\n");
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.err.println("\n ¡Fallo de entrada/salida!\n");
+			System.err.println("\n ï¿½Fallo de entrada/salida!\n");
 			e.printStackTrace();
 		}
 	}
@@ -193,15 +194,15 @@ public class PrimalWindow {
 	/*	-------------------------------------------------
 	 * 					ZONA PUBLICA
 	 	-------------------------------------------------*/
+	
 	/**
-	 * Busca el icono de cierre y cierra la ventana n veces según el número de iteraciones especificadas
+	 * Busca el icono de cierre y cierra la ventana n veces segï¿½n el nï¿½mero de iteraciones especificadas
 	 * @param iterations
 	 * @param timeBetween
 	 * @throws FindFailed
 	 */
 	public void closeWindow(int iterations, int timeBetween) throws FindFailed {
-		String path = "src/main/resources/images/";
-		final Pattern closeWindow = new Pattern(path+"closeWindowButton.PNG").similar(0.95f);
+		final Pattern closeWindow = new Pattern("src/main/resources/images/closeWindowButton.PNG").similar(0.95f);
 		while(iterations>0) {
 			waitInMilisecs(timeBetween);
 			if(WaitFor("Cerrando la ventana numero "+iterations,
@@ -213,10 +214,10 @@ public class PrimalWindow {
 				{
 					put(closeWindow,true);
 				}},80)) {
-				getMyScreen().click(path+"closeWindowButton.png");
+				getMyScreen().click(closeWindow);
 				iterations--;
 			}else {
-				System.err.println("no se encuentra el botón de cerrar ventana");
+				System.err.println("no se encuentra el botï¿½n de cerrar ventana");
 				break;
 			}
 				
@@ -224,12 +225,12 @@ public class PrimalWindow {
 		}
 	}
 	/**
-	 * Contructor de PrimalWindow vacío
+	 * Contructor de PrimalWindow vacï¿½o
 	 */
 	public PrimalWindow() {
 		this.myScreen = new Screen();
 		this.repoPath = "src/main/resources/images/";
-		this.nextWindowScript= new LinkedList<Location>();
+		this.nextWindowScript= new LinkedList<Pattern>();
 	}
 	
 	/**
@@ -241,7 +242,7 @@ public class PrimalWindow {
 	 * @param sourceAction
 	 */
 	public PrimalWindow(Screen myScreen, List<Pattern> references, List<Object> data,
-			UserAmdocs userLogged, String sourceAction,Queue<Location> locs) {
+			UserAmdocs userLogged, String sourceAction,Queue<Pattern> locs) {
 		this.myScreen = myScreen;
 		this.references = references;
 		this.data = data;
@@ -309,10 +310,18 @@ public class PrimalWindow {
 	public Pattern getGeneralWait() {
 		return generalWait;
 	}
-	public Queue<Location> getNextWindowScript() {
+	public Queue<Pattern> getNextWindowScript() {
 		return nextWindowScript;
 	}
-	public void setNextWindowScript(Queue<Location> nextWindowScript) {
+	public void setNextWindowScript(Queue<Pattern> nextWindowScript) {
 		this.nextWindowScript = nextWindowScript;
+	}
+
+	public Pattern getLastPatternConfirmed() {
+		return lastPatternConfirmed;
+	}
+
+	public void setLastPatternConfirmed(Pattern lastPatternConfirmed) {
+		this.lastPatternConfirmed = lastPatternConfirmed;
 	}
 }

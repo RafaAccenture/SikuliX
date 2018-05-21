@@ -16,6 +16,7 @@ public class MyRow {
 		this.input = input;
     }
 	
+	@Override
 	public String toString() {
 	    return String.format("%s - %s", action, "numero de inputs:"+input.size());
 	}

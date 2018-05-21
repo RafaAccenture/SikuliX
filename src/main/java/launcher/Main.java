@@ -10,18 +10,15 @@ import org.sikuli.script.FindFailed;
 
 import controller.ManagerScheduler;
 
-
-
 public class Main {
 	public static void main(String[] args) {
 		System.out.println("AutoAmdocs main");
 		System.out.println("**********************************\n\n");
-    	Settings.OcrTextSearch=true;
-
+		Settings.OcrTextSearch = true;
 		ManagerScheduler ms;
-		
 		try {
-			System.out.println("Empieza el programa en breves instantes, no toque el ratón ni el teclado hasta su finalización");
+			System.out.println(
+					"Empieza el programa en breves instantes, no toque el ratï¿½n ni el teclado hasta su finalizaciï¿½n");
 			TimeUnit.MILLISECONDS.sleep(3000);
 			System.out.println("Start!");
 			ms = new ManagerScheduler();

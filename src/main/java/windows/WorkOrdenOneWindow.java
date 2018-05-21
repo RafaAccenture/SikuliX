@@ -3,7 +3,11 @@ package windows;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
+
+import org.sikuli.script.FindFailed;
+import org.sikuli.script.Key;
 import org.sikuli.script.Location;
+import org.sikuli.script.Match;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Screen;
 
@@ -35,7 +39,7 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 		}
 	};
 	
-	private boolean altaMovil(Queue<String> tmp) {
+	private boolean altaMovil(Queue<String> tmp) throws FindFailed {
 		boolean exit = false;
 		final Pattern checkLoad1 = new Pattern(getRepoPath()+"checkLoad1.png").similar(0.95f);
 		final Pattern checkLoad2 = new Pattern(getRepoPath()+"TitleLabel.PNG").similar(0.95f);
@@ -51,26 +55,31 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 					put(checkLoad1,true);
 					put(checkLoad2,true);
 					put(getGeneralWait(),true);
-				}},40)) {
-				
-				getMyScreen().find(getRepoPath()+"Services_MovilOption.PNG").click();
+				}},10)) {
+				Match m = getMyScreen().findBest(getRepoPath()+"middleReference.PNG");
+				m.above().find(getRepoPath()+"Services_MovilOption.PNG").click();
 				getMyScreen().find(getRepoPath()+"addHalfButton.png").click();
-				waitInMilisecs(1000);
+				waitInMilisecs(4000);
 				Location loc= getMyScreen().find(getRepoPath()+"movil/PhoneLineMenu.PNG").getCenter();
 				loc.click();
 				loc.y += 50;
+				waitInMilisecs(5500);
 				loc.click();
 				getMyScreen().find(getRepoPath()+"movil/Accept_option.PNG").click();
 				screenShot("__INFO");
+				getMyScreen().keyDown(Key.DOWN);
+				waitInMilisecs(3000);
+				getMyScreen().keyUp(Key.DOWN);
+				getMyScreen().find(getRepoPath()+"movil/ProcessOrder.PNG").click();
 				exit = true;
 			}else {
-	
 					throw new Exception("timeout para cargando ventana de la pagina Orden de trabajo 1 de 2");
 			}
 		} catch (Exception e) {
 			exit = false;
 		}
-
+		if (!exit && getMyScreen().contains(getMyScreen().findBest(getRepoPath()+"TitleLabel_reference.PNG").getTarget()))
+			this.closeWindow(1, 0);
 		return exit;
 	}
 	/*	-------------------------------------------------
@@ -81,7 +90,7 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 		setRepoPath(getRepoPath()+"windows/workOrdersOne/");
 	}
 	public WorkOrdenOneWindow(Screen myScreen, List<Pattern> references, List<Object> data, UserAmdocs userLogged,
-			String MyrepoPath, String sourceAction,Queue<Location> nextWindowScript) {
+			String MyrepoPath, String sourceAction,Queue<Pattern> nextWindowScript) {
 		super(myScreen, references, data, userLogged, sourceAction, nextWindowScript);
 		setRepoPath(getRepoPath()+"windows/workOrdersOne/");
 	}
@@ -98,8 +107,8 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 		switch(CentralPageInteractionActions.valueOf(ta.toUpperCase())) {
 			case ALTAMOVIL:
 				setSourceAction("ALTAMOVIL");
-				System.out.println("\tacceder a las ordenes de trabajo");
-				System.out.println("\t---------------------------------");	
+				System.out.println("acceder a las ordenes de trabajo");
+				System.out.println("---------------------------------");	
 				correct = altaMovil(tmp);
 				break;
 			default: 

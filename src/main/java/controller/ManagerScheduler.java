@@ -2,6 +2,7 @@ package controller;
 
 import java.awt.AWTException;
 import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,9 +12,10 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.sikuli.script.FindFailed;
-import org.sikuli.script.Location;
+import org.sikuli.script.Pattern;
 import org.sikuli.script.Screen;
 
+import model.Settings;
 import model.UserAmdocs;
 import tools.Consumer;
 import tools.ExcelReader;
@@ -53,19 +55,38 @@ public class ManagerScheduler {
 	private String currectAction;
 	private Screen s;
 	private List<MyRow> myRows;
-	private UserAmdocs myUser;
-	private Queue<Location> openWindowScript;
+	private UserAmdocs myUser;//información del usuario logueado
+	private Settings conf; //clase para configuración de la aplicación
+	private Queue<Pattern> openWindowScript;
 	
     static private Semaphore semaphore = new Semaphore(0);
     static private Semaphore mutex = new Semaphore(1);
     private Producer ThreadProducer;
 	
-    private void runWindowScript() throws InterruptedException {
-    	for(Location loc : openWindowScript) {
-    		loc.click();
-    		TimeUnit.MILLISECONDS.sleep(1000);
+    /**
+     * Guarda el fragmento del script que abre la siguiente ventana
+     * @throws InterruptedException
+     * @throws FindFailed
+     */
+    private void runWindowScript() throws InterruptedException, FindFailed {
+    	Queue<Pattern> tmp = new LinkedList<Pattern>(openWindowScript);
+    	for(Pattern pat : tmp) {
+    		this.s.find(pat).click();
+    		TimeUnit.MILLISECONDS.sleep(1500);
     	}
     }
+    /**
+     * Inicializa la configuración del sistema sobre el que corre la aplicación
+     * @return
+     */
+ 	private Settings setMyConf() {
+ 		Settings tmp = new Settings();
+ 		tmp.setResolution(Toolkit.getDefaultToolkit().getScreenSize());
+ 		tmp.setMAX_NUMBER_ERRORS(3);
+ 		tmp.setEnvironment("TGA21");
+		return null;
+	}
+ 	
 	/**
 	 * Para la ejecución hasta recibir una entrada de teclado
 	 */
@@ -116,16 +137,22 @@ public class ManagerScheduler {
 							SearchClientWindow scw = new SearchClientWindow();
 							correct = scw.start(tmp);
 							if(correct) setOpenWindowScript(scw.getNextWindowScript());
+							runWindowScript();
 							break;
 						case CENTRALPAGEINTERACTION:
 							CentralPageInteractionWindow cpw = new CentralPageInteractionWindow();
 							correct = cpw.start(tmp);
 							if(correct) setOpenWindowScript(cpw.getNextWindowScript());
+							runWindowScript();
+							Pattern tmpPat = cpw.waitExitConfirmation();//en caso de pedir confirmacion para entrar la gestiona
+							if (tmpPat != null)
+								openWindowScript.add(tmpPat);
 							break;
 						case WORKORDERSONE:
 							WorkOrdenOneWindow wow = new WorkOrdenOneWindow();
 							correct = wow.start(tmp);
 							if(correct) setOpenWindowScript(wow.getNextWindowScript());
+							else runWindowScript();
 							break;
 						case CLOSEWINDOW:
 							PrimalWindow pw = new PrimalWindow();
@@ -146,12 +173,12 @@ public class ManagerScheduler {
 				} catch (FindFailed e) {
 					numErr++;
 					correct = false;
-					System.err.println("Fallo en la tarea "+current.getAction(pos)+"\tErrores registrados: "+numErr);
+					System.err.println("Fallo de busqeda de recurso en "+current.getAction(pos)+"\tErrores registrados: "+numErr);
 					System.err.println(e);
 				} catch (Exception e) {
 					numErr++;
 					correct = false;
-					System.err.println("Fallo en la tarea "+current.getAction(pos)+"\tErrores registrados: "+numErr);
+					System.err.println("Fallo inesperado en la tarea "+current.getAction(pos)+"\tErrores registrados: "+numErr);
 					System.err.println(e);
 				}
 			}while( (!correct) && numErr < 3);
@@ -177,9 +204,11 @@ public class ManagerScheduler {
  		ExcelReader er = new ExcelReader();
  		//volcamos el excel
 		this.myRows = er.readBooksFromExcelFile("files/pruebas.xlsx");
-		this.openWindowScript = new LinkedList<Location>();
+		this.openWindowScript = new LinkedList<Pattern>();
+		this.conf = setMyConf();
  	}
- 	public void ShowExcelContent() {
+
+	public void ShowExcelContent() {
  		System.out.println(this.myRows);
  	}
  	public void start() throws FindFailed, InterruptedException, HeadlessException, IOException, AWTException {
@@ -207,13 +236,13 @@ public class ManagerScheduler {
 		String rol = tmp.poll();
 		UserAmdocs ua = new UserAmdocs(name,rol);
 		this.myUser = ua;
-		System.out.println("Login con "+name+" con rol '"+rol+"'");
+		System.out.println("Login de "+name+" con rol '"+rol+"'");
 		return ( this.myUser != null );
 	}
-	public Queue<Location> getOpenWindowScript() {
+	public Queue<Pattern> getOpenWindowScript() {
 		return openWindowScript;
 	}
-	public void setOpenWindowScript(Queue<Location> queue) {
+	public void setOpenWindowScript(Queue<Pattern> queue) {
 		this.openWindowScript = queue;
 	}
 }

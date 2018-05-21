@@ -16,7 +16,8 @@ public class ErrorDetector extends Thread{
 		this.semaphore=semaphore;
 		this.mutex=mutex;
 	}
-    public void run(){
+    @Override
+	public void run(){
     	System.out.println("Hilo consumidor 'ERROR DETECTOR' activado");
     	setError(false);
     	setEnd(false);//se controla desde fuera el setter a true

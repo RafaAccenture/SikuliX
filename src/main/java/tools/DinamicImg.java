@@ -44,7 +44,7 @@ public class DinamicImg {
 		File blankFile = new File("images/dinamic/"+this.path);
 		BufferedImage image = null;
 		try {
-		    final Calendar now = GregorianCalendar.getInstance();
+		    final Calendar now = Calendar.getInstance();
 		    final int dayNumber = now.get(Calendar.DAY_OF_MONTH);
 			image = ImageIO.read(blankFile);
 			int w = image.getWidth();

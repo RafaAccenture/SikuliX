@@ -68,7 +68,7 @@ public class SearchClientWindow extends PrimalWindow{
 
 		{
 			put(MessageError,true);
-		}},5));
+		}},3));
 	}
 	private boolean findClient(Queue<String> tmp) throws Exception {
 		boolean exit = false;
@@ -83,7 +83,7 @@ public class SearchClientWindow extends PrimalWindow{
 
 			{
 				put(errorFinderButtons,false);
-			}},100)) {
+			}},20)) {
 			loc = getMyScreen().findBest(getRepoPath()+"clearButton.png").getTarget();
 			getMyScreen().click(loc);
 
@@ -123,7 +123,7 @@ public class SearchClientWindow extends PrimalWindow{
 						{
 							put(findResultsCheck,true);
 							put(findButtonLoading,false);
-						}},50)) 
+						}},15)) 
 					throw new Exception("timeout para busqueda en la base de datos");//se lanza excepcion por timeout de la espera
 
 			}	
@@ -164,19 +164,19 @@ public class SearchClientWindow extends PrimalWindow{
 					m.below().findBest("src/main/resources/images/CheckCircle.PNG").click();
 					waitInMilisecs(3000);
 				} while(getMyScreen().exists(selectClientButtonOff) != null);
-				Location loc = getMyScreen().find(getRepoPath()+"selectClientButton.PNG").getTarget();
-				loc.click();
+				setLastPatternConfirmed(new Pattern(getRepoPath()+"selectClientButton.png").similar(0.95f));
 				//guardamos el 'script' para abrir la siguiente ventana en caso de error
-				getNextWindowScript().add(loc);
+				getNextWindowScript().add(getLastPatternConfirmed());
 				exit = true;
 			}
 		} catch (FindFailed e) {
 			throw e;//salimos de la ventana
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			exit = false;
 			System.err.println(e);
 		}
+		if (!exit)
+			this.closeWindow(1, 0);
 		return exit;
 	}
 	/*	-------------------------------------------------
@@ -187,7 +187,7 @@ public class SearchClientWindow extends PrimalWindow{
 		setRepoPath(getRepoPath()+"windows/findClient/");
 	}
 	public SearchClientWindow(Screen myScreen, List<Pattern> references, List<Object> data, UserAmdocs userLogged,
-			String MyrepoPath, String sourceAction,Queue<Location> nextWindowScript) {
+			String MyrepoPath, String sourceAction,Queue<Pattern> nextWindowScript) {
 		super(myScreen, references, data, userLogged, sourceAction, nextWindowScript);
 		setRepoPath(getRepoPath()+"windows/findClient/");
 	}

@@ -4,8 +4,10 @@
 	<artifactId>AutoAmdocs</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
-  
-  	<dependencies>
+	<properties>
+		<failOnMissingWebXml>false</failOnMissingWebXml>
+	</properties>
+	<dependencies>
 		<dependency>
 			<groupId>com.sikulix</groupId>
 			<artifactId>sikulixapi</artifactId>
@@ -32,7 +34,6 @@
 			<version>LATEST</version>
 		</dependency>
 	</dependencies>
-	
 	<repositories>
 		<repository>
 			<id>com.sikulix</id>
@@ -40,8 +41,8 @@
 			<url>https://oss.sonatype.org/content/groups/public</url>
 			<layout>default</layout>
 			<snapshots>
-			<enabled>true</enabled>
-			<updatePolicy>always</updatePolicy>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
 	</repositories>
