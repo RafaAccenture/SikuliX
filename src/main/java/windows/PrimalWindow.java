@@ -22,22 +22,27 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import org.sikuli.script.Button;
 import org.sikuli.script.FindFailed;
 import org.sikuli.script.ImagePath;
+import org.sikuli.script.Key;
 import org.sikuli.script.Match;
 import org.sikuli.script.Pattern;
+import org.sikuli.script.Region;
 import org.sikuli.script.Screen;
 
 import model.UserAmdocs;
 import tools.DinamicImg;
  
 public class PrimalWindow {
+	
 	final private Pattern generalWait = new Pattern("src/main/resources/images/generalWait.PNG").similar(0.95f);
 	private Screen myScreen;
 	private List<Pattern> references;
 	private List<Object> data;
 	private UserAmdocs userLogged;
 	private String repoPath;
+	private String windowPath;
 	private String sourceAction;
 	private Pattern lastPatternConfirmed;
 	private Queue<Pattern> nextWindowScript;
@@ -60,6 +65,19 @@ public class PrimalWindow {
 	/*	-------------------------------------------------
 	 * 					ZONA PROTEGIDA
 	 	-------------------------------------------------*/
+	/**
+	 * Dado un menu desplegable en un formulario selecciona la posicion dada como</br>
+	 * parámetro de entrada empezando desde arriba.
+	 * @param pos : posicion a seleccionar
+	 */
+	void selectFromMenuInput(int pos) {
+		for(int i = 0;i < pos;i++) {
+			waitInMilisecs(300);
+			getMyScreen().type(Key.DOWN);
+		}
+		waitInMilisecs(1000);
+		getMyScreen().type(Key.ENTER);
+	}
 	/**
 	 * Inserta texto en una imagen con las propiedades especificadas </br>
 	 * <b>Ejemplo:</b>
@@ -109,7 +127,7 @@ public class PrimalWindow {
 			myIt.remove();
 		}else {
 			System.out.println("click individual");
-			p = new Pattern(modPath).similar(0.10f);
+			p = new Pattern(modPath).similar(0.40f);
 			m = this.myScreen.findBest(p);
 			System.out.println(m.getScore());
 			m.click();
@@ -117,7 +135,43 @@ public class PrimalWindow {
 		removeFile(modPath);
 		ImagePath.reset();//limpia la cachï¿½ interna de la librerï¿½a
 	}
+	/**
+	 * Usa los scrolls de la ventana para moverse
+	 * <h1>opciones parametro entrada</h1>
+	 * <ul>
+	 * <li>ABAJO</li>
+	 * <li>ARRIBA por hacer</li>
+	 * <li>DERECHA</li>
+	 * <li>IZQUIERDA</li>
+	 * </ul>
+	 * @param direccion
+	 * @throws FindFailed
+	 */
+	protected void mover_ventana(String direccion) {
+		Region tmpReg;
+		try {
+			if(direccion.equals("ABAJO")) {
+				tmpReg = new Region(1698,0,222,1080);//seccion de la derecha del todo
+				tmpReg.hover(getRepoPath()+"vertical_scroll_down.png");
 	
+			}else if(direccion.equals("DERECHA")) {
+				tmpReg = new Region(0,947,1920,133);//seccion abajo de la ventana
+				tmpReg.hover(getRepoPath()+"scroll_horizontal_right.png");
+				
+			}else if(direccion.equals("IZQUIERDA")) {
+				tmpReg = new Region(0,947,1920,133);//seccion abajo de la ventana
+				tmpReg.hover(getRepoPath()+"horizontal_scroll_left.png");
+				
+			}
+			
+			waitInMilisecs(500);
+			getMyScreen().mouseDown(Button.LEFT);
+			waitInMilisecs(3000);
+			getMyScreen().mouseUp(Button.LEFT);
+		} catch (FindFailed e) {
+			System.err.println("No se encuentra barra de scroll");
+		}
+	}
 	/**
 	 * Hace una captura de pantalla en la carpeta log con el nombre de la accion seguido de --
 	 *  y la fecha actual en el formato  yyyy__MM__dd HH_mm_ss.
@@ -144,7 +198,17 @@ public class PrimalWindow {
 			e.printStackTrace();
 		}
 	}
-	
+	protected boolean CheckLoadBar() {
+		int cont = 40;
+		Pattern generalWait = new Pattern(getRepoPath()+"generalWait.PNG").similar(0.9f);
+		Region tmpReg = new Region(1602,958,318,122);
+		while(tmpReg.exists(generalWait) != null && cont > 0) {
+			System.out.print(". ");
+			waitInMilisecs(500);
+			cont--;
+		}
+		return cont > 0;	
+	}
 	/**
 	 * Busca sobre los patrones deseados para respetar los tiempos de carga
 	 * @param label : etiqueta a mostrar por la carga
@@ -202,7 +266,7 @@ public class PrimalWindow {
 	 * @throws FindFailed
 	 */
 	public void closeWindow(int iterations, int timeBetween) throws FindFailed {
-		final Pattern closeWindow = new Pattern("src/main/resources/images/closeWindowButton.PNG").similar(0.95f);
+		final Pattern closeWindow = new Pattern(getRepoPath()+"closeWindowButton.PNG").similar(0.95f);
 		while(iterations>0) {
 			waitInMilisecs(timeBetween);
 			if(WaitFor("Cerrando la ventana numero "+iterations,
@@ -323,5 +387,13 @@ public class PrimalWindow {
 
 	public void setLastPatternConfirmed(Pattern lastPatternConfirmed) {
 		this.lastPatternConfirmed = lastPatternConfirmed;
+	}
+
+	public String getWindowPath() {
+		return windowPath;
+	}
+
+	public void setWindowPath(String windowPath) {
+		this.windowPath = windowPath;
 	}
 }

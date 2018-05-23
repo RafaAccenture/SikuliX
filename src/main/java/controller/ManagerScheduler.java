@@ -212,8 +212,8 @@ public class ManagerScheduler {
  		System.out.println(this.myRows);
  	}
  	public void start() throws FindFailed, InterruptedException, HeadlessException, IOException, AWTException {
- 		ListIterator<MyRow> litr = myRows.listIterator();
- 		this.s.click("src/main/resources/images/logoHoverVodafone.PNG");
+	ListIterator<MyRow> litr = myRows.listIterator();
+ 		this.s.hover("src/main/resources/images/logoHoverVodafone.PNG");
  		while(litr.hasNext()){
  			System.out.println("---------------------------\nNueva fila\n---------------------------");
  			throwRow(litr.next());

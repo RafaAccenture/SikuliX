@@ -9,6 +9,7 @@ import org.sikuli.script.Key;
 import org.sikuli.script.Location;
 import org.sikuli.script.Match;
 import org.sikuli.script.Pattern;
+import org.sikuli.script.Region;
 import org.sikuli.script.Screen;
 
 import model.UserAmdocs;
@@ -41,36 +42,39 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 	
 	private boolean altaMovil(Queue<String> tmp) throws FindFailed {
 		boolean exit = false;
-		final Pattern checkLoad1 = new Pattern(getRepoPath()+"checkLoad1.png").similar(0.95f);
-		final Pattern checkLoad2 = new Pattern(getRepoPath()+"TitleLabel.PNG").similar(0.95f);
 		try {
 			//emula barra de carga de la ventana en sí
-			if(WaitFor("cargando ventana de las ordenes de trabajo 1 de 2",
-				new HashMap<Pattern, Boolean>() {/**
-					 * Comprueba si ha cargado ya toda la interfaz de la ventana
-					 */
-					private static final long serialVersionUID = 1L;
-	
-				{
-					put(checkLoad1,true);
-					put(checkLoad2,true);
-					put(getGeneralWait(),true);
-				}},10)) {
-				Match m = getMyScreen().findBest(getRepoPath()+"middleReference.PNG");
-				m.above().find(getRepoPath()+"Services_MovilOption.PNG").click();
-				getMyScreen().find(getRepoPath()+"addHalfButton.png").click();
-				waitInMilisecs(4000);
-				Location loc= getMyScreen().find(getRepoPath()+"movil/PhoneLineMenu.PNG").getCenter();
-				loc.click();
-				loc.y += 50;
-				waitInMilisecs(5500);
-				loc.click();
-				getMyScreen().find(getRepoPath()+"movil/Accept_option.PNG").click();
-				screenShot("__INFO");
-				getMyScreen().keyDown(Key.DOWN);
-				waitInMilisecs(3000);
-				getMyScreen().keyUp(Key.DOWN);
-				getMyScreen().find(getRepoPath()+"movil/ProcessOrder.PNG").click();
+			if(CheckLoadBar()) {
+				Region menu = new Region(326,224,522,790);
+				menu.click(getWindowPath()+"Services_MovilOption.PNG");
+				waitInMilisecs(500);
+				menu.click(getWindowPath()+"addButton.PNG");
+				if(CheckLoadBar()) {
+					Location formsLocation;
+					Region forms = new Region(769,228,1151,791);
+					//input de elección de línea de teléfono
+					formsLocation = forms.find(getWindowPath()+"movil/PhoneLineMenu.PNG").getTarget();
+					formsLocation.x+=20;
+					forms.click(formsLocation);
+					waitInMilisecs(1500);
+					selectFromMenuInput(1);
+					waitInMilisecs(1000);
+					//input de elección de tarifa de llamadas	 
+					formsLocation = forms.find(getWindowPath()+"movil/callCostMenu.PNG").getTarget();
+					formsLocation.x+=20;
+					forms.click(formsLocation);
+					selectFromMenuInput(9);
+					waitInMilisecs(1000);
+					//input de elección de SIM
+					formsLocation = forms.find(getWindowPath()+"movil/simMenu.PNG").getTarget();
+					formsLocation.x+=20;
+					forms.click(formsLocation);
+					selectFromMenuInput(2);
+					waitInMilisecs(1000);
+					
+					mover_ventana("ABAJO");
+					forms.click(getWindowPath()+"movil/AcceptButton.PNG");
+				}
 				exit = true;
 			}else {
 					throw new Exception("timeout para cargando ventana de la pagina Orden de trabajo 1 de 2");
@@ -78,8 +82,7 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 		} catch (Exception e) {
 			exit = false;
 		}
-		if (!exit && getMyScreen().contains(getMyScreen().findBest(getRepoPath()+"TitleLabel_reference.PNG").getTarget()))
-			this.closeWindow(1, 0);
+
 		return exit;
 	}
 	/*	-------------------------------------------------
@@ -87,12 +90,12 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 	 	-------------------------------------------------*/
 	public WorkOrdenOneWindow() {
 		super();
-		setRepoPath(getRepoPath()+"windows/workOrdersOne/");
+		setWindowPath(getRepoPath()+"windows/workOrdersOne/");
 	}
 	public WorkOrdenOneWindow(Screen myScreen, List<Pattern> references, List<Object> data, UserAmdocs userLogged,
 			String MyrepoPath, String sourceAction,Queue<Pattern> nextWindowScript) {
 		super(myScreen, references, data, userLogged, sourceAction, nextWindowScript);
-		setRepoPath(getRepoPath()+"windows/workOrdersOne/");
+		setWindowPath(getRepoPath()+"windows/workOrdersOne/");
 	}
 	/**
 	 * Dada una accion selecciona la ejecucion apropiada

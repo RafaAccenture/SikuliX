@@ -41,34 +41,19 @@ public class CentralPageInteractionWindow extends PrimalWindow {
 
 	private boolean accederOrdenesTrabajo(Queue<String> tmp) throws Exception {
 		boolean exit = false;
-		Location loc;
 		try {
-			final Pattern menuCheckLoad = new Pattern(getRepoPath() + "menuCheckLoad.PNG").similar(0.95f);
-			final Pattern menuCheckLoad2 = new Pattern(getRepoPath() + "menuCheckLoad2.PNG").similar(0.95f);
 
 			// emula barra de carga de la ventana en sí
-			if (WaitFor("cargando ventana de la pagina principal de interaccion", new HashMap<Pattern, Boolean>() {
-				/**
-				 * busca si esta el boton de cerrar ventana
-				 */
-				private static final long serialVersionUID = 1L;
-
-				{
-					put(menuCheckLoad, true);
-					put(menuCheckLoad2, true);
-					put(getGeneralWait(), true);
-				}
-			}, 10)) {
-
-				screenShot("__INFO");
-
-				System.out.println("PRUEBA de botón activo");
-				// getMyScreen().click(getRepoPath()+"gestionComercial.PNG");
-				setLastPatternConfirmed(new Pattern(getRepoPath() + "gestionComercial.PNG").similar(0.95f));
+			if (CheckLoadBar()) {
+				mover_ventana("ABAJO");
+				setLastPatternConfirmed(
+						new Pattern(getWindowPath() + "gestionComercial.PNG").similar(0.95f)
+						);
 				waitInMilisecs(2000);
 				getNextWindowScript().add(getLastPatternConfirmed());
 				setLastPatternConfirmed(
-						new Pattern(getRepoPath() + "gestionComercial_ordenTrabajo.PNG").similar(0.95f));
+						new Pattern(getWindowPath() + "gestionComercial_ordenTrabajo.PNG").similar(0.95f)
+						);
 				getNextWindowScript().add(getLastPatternConfirmed());
 				waitInMilisecs(1000);
 				exit = true;
@@ -90,7 +75,7 @@ public class CentralPageInteractionWindow extends PrimalWindow {
 	 */
 	public Pattern waitExitConfirmation() {
 		Pattern pat = null;
-		final Pattern SelectAnOption = new Pattern("src/main/resources/images/PopUps/SelectAnOption.PNG")
+		final Pattern SelectAnOption = new Pattern(getRepoPath()+"PopUps/SelectAnOption.PNG")
 				.similar(0.95f);
 		// Emula la barra de carga para chequear si se pide confirmacion
 		if (WaitFor("Esperamos por si pide confirmacion de seleccionar una opcion", new HashMap<Pattern, Boolean>() {
@@ -102,7 +87,7 @@ public class CentralPageInteractionWindow extends PrimalWindow {
 				put(SelectAnOption, true);
 			}
 		}, 10)) {
-			pat = new Pattern("src/main/resources/images/PopUps/SelectAnOption_yes.PNG");
+			pat = new Pattern(getRepoPath()+"PopUps/SelectAnOption_yes.PNG");
 			setLastPatternConfirmed(pat);
 			getMyScreen().findBest(getLastPatternConfirmed()).click();
 		} else
@@ -113,13 +98,13 @@ public class CentralPageInteractionWindow extends PrimalWindow {
 
 	public CentralPageInteractionWindow() {
 		super();
-		setRepoPath(getRepoPath() + "windows/interactionCentralPage/");
+		setWindowPath(getRepoPath() + "windows/interactionCentralPage/");
 	}
 
 	public CentralPageInteractionWindow(Screen myScreen, List<Pattern> references, List<Object> data,
 			UserAmdocs userLogged, String MyrepoPath, String sourceAction, Queue<Pattern> nextWindowScript) {
 		super(myScreen, references, data, userLogged, sourceAction, nextWindowScript);
-		setRepoPath(getRepoPath() + "windows/interactionCentralPage/");
+		setWindowPath(getRepoPath() + "windows/interactionCentralPage/");
 	}
 
 	/**
