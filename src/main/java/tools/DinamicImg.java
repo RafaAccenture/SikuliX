@@ -6,15 +6,12 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-
 import javax.imageio.ImageIO;
 
 
@@ -24,7 +21,7 @@ public class DinamicImg {
 	
 	
 	
-    private static BufferedImage resizeImage(BufferedImage originalImage, int type,String content, FontMetrics metrics){
+    private static BufferedImage resizeDinamicImage(BufferedImage originalImage, int type,String content, FontMetrics metrics){
 	BufferedImage resizedImage = new BufferedImage(metrics.stringWidth(content)+4, metrics.getAscent() + metrics.getDescent()+4, type);
 	Graphics2D g = resizedImage.createGraphics();
 	g.drawImage(originalImage, 0, 0, metrics.stringWidth(content)+4,  metrics.getAscent() + metrics.getDescent()+4, null);
@@ -33,47 +30,22 @@ public class DinamicImg {
 	return resizedImage;
     }
 
-	
+	/**
+	 * Constructor básico
+	 */
 	public DinamicImg(){}
+	
+	/**
+	 * Constructor completo
+	 * @param path
+	 */
 	public DinamicImg(String path){
 		this.path=path;
 	}
 	
-	public String activityDetailsMove_CalendarDayBlanck() {
-		setPath("activityDetailsMove_CalendarDayBlanck.png");
-		File blankFile = new File("images/dinamic/"+this.path);
-		BufferedImage image = null;
-		try {
-		    final Calendar now = Calendar.getInstance();
-		    final int dayNumber = now.get(Calendar.DAY_OF_MONTH);
-			image = ImageIO.read(blankFile);
-			int w = image.getWidth();
-			int h = image.getHeight();
-		    Graphics2D g2 = image.createGraphics();
-		    Font font= new Font("Arial,Helvetica,sans-serif", Font.BOLD, 18);
-		    g2.setColor(Color.decode("#272b2d"));
-		    g2.setFont(font);
-		    // Get the FontMetrics
-		    FontMetrics metrics = g2.getFontMetrics(font);
-		    
-		    int x = (w - metrics.stringWidth(String.valueOf(dayNumber))) / 2;
-		    int y = (metrics.getAscent() + (h - (metrics.getAscent() + metrics.getDescent())) / 2);
-
-		    
-		    g2.drawString(String.valueOf(dayNumber), x, y);
-		    g2.dispose();
-		    
-		    //create image with text
-		    String exit_path = "images/dinamic/changed_"+path;
-		    ImageIO.write(image, "png", new File(exit_path));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return "images/dinamic/changed_"+path;
-	}
 	/**
-	 * 
+	 * Dada una fuente, tamaño y colores inserta texto en una foto en blanco y la escala ajustándose a 
+	 * las características.
 	 * @param colorLetter
 	 * @param colorBackground
 	 * @param text
@@ -97,7 +69,7 @@ public class DinamicImg {
 			g2.setPaint(new Color(colorBackground[0],colorBackground[1],colorBackground[2]));
 			g2.fillRect ( 0, 0, image.getWidth(), image.getHeight() );
 			FontMetrics metrics = g2.getFontMetrics(font);
-			BufferedImage resizeImage = resizeImage(image,type, text,metrics);
+			BufferedImage resizeImage = resizeDinamicImage(image,type, text,metrics);
 			int w = resizeImage.getWidth();
 			int h = resizeImage.getHeight();
 			g2 = resizeImage.createGraphics();
@@ -119,6 +91,31 @@ public class DinamicImg {
             outStream.close();
             originalStream.close();
         }
+		return exit_path;
+	}
+	
+	public String obtainScaledImage(String currentFolderPath,float ratioScale) {
+		InputStream originalStream;
+		String exit_path = "";
+		try {
+			  originalStream = new FileInputStream(currentFolderPath+getPath());
+			  
+			  BufferedImage  original_image = ImageIO.read(originalStream);
+			  int scaledWidth = (int) (ratioScale* original_image.getWidth());
+			  int scaledHeight = (int) (ratioScale* original_image.getHeight());
+			  BufferedImage scaled_image = new BufferedImage( scaledWidth, scaledHeight, original_image.getType() );
+			  Graphics2D g2 = scaled_image.createGraphics(); //crea un objecto Graphics para manipular la imagen
+			  g2.drawImage( original_image, 0, 0, scaledWidth, scaledHeight, null ); //dibuja la imagen escalada
+			  exit_path = currentFolderPath+"scaled_"+getPath();
+			  OutputStream outStream = new FileOutputStream(exit_path);
+			  ImageIO.write( scaled_image, "PNG", outStream ); //escribe la imagen en el archivo determinado por la salida outStream
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return exit_path;
 	}
 	

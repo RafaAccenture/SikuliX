@@ -31,6 +31,7 @@ import org.sikuli.script.Pattern;
 import org.sikuli.script.Region;
 import org.sikuli.script.Screen;
 
+import model.Settings;
 import model.UserAmdocs;
 import tools.DinamicImg;
  
@@ -41,6 +42,7 @@ public class PrimalWindow {
 	private List<Pattern> references;
 	private List<Object> data;
 	private UserAmdocs userLogged;
+	private Settings settings;
 	private String repoPath;
 	private String windowPath;
 	private String sourceAction;
@@ -135,6 +137,30 @@ public class PrimalWindow {
 		removeFile(modPath);
 		ImagePath.reset();//limpia la cach� interna de la librer�a
 	}
+	
+	/**
+	 * Dado el nombre de una imagen se usa la ruta por defecto de la ventana y el porcentaje de escala de las configuraciones
+	 * para escalar la imagen devolviendo la ruta donde se ha creado
+	 * @param imageName
+	 * @return
+	 */
+	protected String reescaledImage(String imageName) {
+		DinamicImg DimImg = new DinamicImg(imageName);
+		String exit = DimImg.obtainScaledImage(getWindowPath(), getSettings().getScaledImgRatio());
+		return exit;
+	}
+	/**
+	 * Dado el nombre de una imagen  y su ruta se usa el porcentaje de escala de las configuraciones
+	 * para escalar la imagen devolviendo la ruta donde se ha creado
+	 * @param path
+	 * @param imageName
+	 * @return
+	 */
+	protected String reescaledImage(String path, String imageName) {
+		DinamicImg DimImg = new DinamicImg(imageName);
+		String exit = DimImg.obtainScaledImage(path, getSettings().getScaledImgRatio());
+		return exit;
+	}
 	/**
 	 * Usa los scrolls de la ventana para moverse
 	 * <h1>opciones parametro entrada</h1>
@@ -151,15 +177,15 @@ public class PrimalWindow {
 		Region tmpReg;
 		try {
 			if(direccion.equals("ABAJO")) {
-				tmpReg = new Region(1698,0,222,1080);//seccion de la derecha del todo
+				tmpReg = new Region(1476,148,123,713);//seccion de la derecha del todo
 				tmpReg.hover(getRepoPath()+"vertical_scroll_down.png");
 	
 			}else if(direccion.equals("DERECHA")) {
-				tmpReg = new Region(0,947,1920,133);//seccion abajo de la ventana
+				tmpReg = new Region(0,794,1600,106);//seccion abajo de la ventana
 				tmpReg.hover(getRepoPath()+"scroll_horizontal_right.png");
 				
 			}else if(direccion.equals("IZQUIERDA")) {
-				tmpReg = new Region(0,947,1920,133);//seccion abajo de la ventana
+				tmpReg = new Region(0,794,1600,106);//seccion abajo de la ventana
 				tmpReg.hover(getRepoPath()+"horizontal_scroll_left.png");
 				
 			}
@@ -198,10 +224,14 @@ public class PrimalWindow {
 			e.printStackTrace();
 		}
 	}
+	/**
+	 * 
+	 * @return
+	 */
 	protected boolean CheckLoadBar() {
 		int cont = 40;
 		Pattern generalWait = new Pattern(getRepoPath()+"generalWait.PNG").similar(0.9f);
-		Region tmpReg = new Region(1602,958,318,122);
+		Region tmpReg = new Region(1420,827,180,73);
 		while(tmpReg.exists(generalWait) != null && cont > 0) {
 			System.out.print(". ");
 			waitInMilisecs(500);
@@ -289,41 +319,50 @@ public class PrimalWindow {
 		}
 	}
 	/**
-	 * Contructor de PrimalWindow vac�o
+	 * Contructor simple
+	 * @param settings2 
+	 * @param userAmdocs 
 	 */
-	public PrimalWindow() {
+	public PrimalWindow(UserAmdocs userAmdocs, Settings settings) {
 		this.myScreen = new Screen();
 		this.repoPath = "src/main/resources/images/";
 		this.nextWindowScript= new LinkedList<Pattern>();
+		this.userLogged = userAmdocs;
+		this.settings = settings;
 	}
-	
 	/**
-	 * Contructor de PrimalWindow
+	 * constructor completo
 	 * @param myScreen
 	 * @param references
 	 * @param data
+	 * @param userLogged
+	 * @param settings
 	 * @param repoPath
+	 * @param windowPath
 	 * @param sourceAction
+	 * @param nextWindowScript
 	 */
-	public PrimalWindow(Screen myScreen, List<Pattern> references, List<Object> data,
-			UserAmdocs userLogged, String sourceAction,Queue<Pattern> locs) {
+	public PrimalWindow(Screen myScreen, List<Pattern> references, List<Object> data, UserAmdocs userLogged,
+			Settings settings, String repoPath, String windowPath, String sourceAction, Queue<Pattern> nextWindowScript) {
+		super();
 		this.myScreen = myScreen;
 		this.references = references;
 		this.data = data;
-		this.repoPath = "src/main/resources/images/";
-		this.sourceAction = sourceAction;
 		this.userLogged = userLogged;
-		this.nextWindowScript = locs;
+		this.settings = settings;
+		this.repoPath = repoPath;
+		this.windowPath = windowPath;
+		this.sourceAction = sourceAction;
+		this.nextWindowScript = nextWindowScript;
 	}
-	
-
-	
 /*
  * ----------------------------------------------------------------------
  * 		Getters y Setters de la clase
  * ----------------------------------------------------------------------
  */
 	
+
+
 	public Screen getMyScreen() {
 		return myScreen;
 	}
@@ -395,5 +434,13 @@ public class PrimalWindow {
 
 	public void setWindowPath(String windowPath) {
 		this.windowPath = windowPath;
+	}
+
+	public Settings getSettings() {
+		return settings;
+	}
+
+	public void setSettings(Settings settings) {
+		this.settings = settings;
 	}
 }

@@ -1,17 +1,15 @@
 package windows;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
 
 import org.sikuli.script.FindFailed;
-import org.sikuli.script.Key;
 import org.sikuli.script.Location;
-import org.sikuli.script.Match;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Region;
 import org.sikuli.script.Screen;
 
+import model.Settings;
 import model.UserAmdocs;
 
 public class WorkOrdenOneWindow extends PrimalWindow{
@@ -45,35 +43,36 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 		try {
 			//emula barra de carga de la ventana en sí
 			if(CheckLoadBar()) {
-				Region menu = new Region(326,224,522,790);
-				menu.click(getWindowPath()+"Services_MovilOption.PNG");
+				Region menu = new Region(318,154,310,482);
+				menu.click(reescaledImage("Services_MovilOption.PNG"));
 				waitInMilisecs(500);
-				menu.click(getWindowPath()+"addButton.PNG");
+				menu.click(reescaledImage("addButton.PNG"));
 				if(CheckLoadBar()) {
+					waitInMilisecs(10000);// para asegurar la carga del menú
 					Location formsLocation;
-					Region forms = new Region(769,228,1151,791);
+					Region forms = new Region(629,151,971,686);
 					//input de elección de línea de teléfono
-					formsLocation = forms.find(getWindowPath()+"movil/PhoneLineMenu.PNG").getTarget();
+					formsLocation = forms.find(reescaledImage(getWindowPath()+"movil/","PhoneLineMenu.PNG")).getTarget();
 					formsLocation.x+=20;
 					forms.click(formsLocation);
 					waitInMilisecs(1500);
 					selectFromMenuInput(1);
 					waitInMilisecs(1000);
 					//input de elección de tarifa de llamadas	 
-					formsLocation = forms.find(getWindowPath()+"movil/callCostMenu.PNG").getTarget();
+					formsLocation = forms.find(reescaledImage(getWindowPath()+"movil/","callCostMenu.PNG")).getTarget();
 					formsLocation.x+=20;
 					forms.click(formsLocation);
-					selectFromMenuInput(9);
+					selectFromMenuInput(10);
 					waitInMilisecs(1000);
 					//input de elección de SIM
-					formsLocation = forms.find(getWindowPath()+"movil/simMenu.PNG").getTarget();
+					formsLocation = forms.find(reescaledImage(getWindowPath()+"movil/","simMenu.PNG")).getTarget();
 					formsLocation.x+=20;
 					forms.click(formsLocation);
 					selectFromMenuInput(2);
 					waitInMilisecs(1000);
 					
 					mover_ventana("ABAJO");
-					forms.click(getWindowPath()+"movil/AcceptButton.PNG");
+					forms.click(reescaledImage(getWindowPath()+"movil/","AcceptButton.PNG"));
 				}
 				exit = true;
 			}else {
@@ -88,13 +87,13 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 	/*	-------------------------------------------------
 	 * 					ZONA PUBLICA
 	 	-------------------------------------------------*/
-	public WorkOrdenOneWindow() {
-		super();
+	public WorkOrdenOneWindow(UserAmdocs userAmdocs, Settings settings) {
+		super(userAmdocs,settings);
 		setWindowPath(getRepoPath()+"windows/workOrdersOne/");
 	}
 	public WorkOrdenOneWindow(Screen myScreen, List<Pattern> references, List<Object> data, UserAmdocs userLogged,
-			String MyrepoPath, String sourceAction,Queue<Pattern> nextWindowScript) {
-		super(myScreen, references, data, userLogged, sourceAction, nextWindowScript);
+			String MyrepoPath, String sourceAction,Queue<Pattern> nextWindowScript,Settings settings) {
+		super(myScreen, references, data, userLogged, settings, sourceAction, sourceAction, sourceAction, nextWindowScript);
 		setWindowPath(getRepoPath()+"windows/workOrdersOne/");
 	}
 	/**

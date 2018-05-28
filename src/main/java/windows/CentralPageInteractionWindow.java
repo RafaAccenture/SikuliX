@@ -4,10 +4,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
 
-import org.sikuli.script.Location;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Screen;
 
+import model.Settings;
 import model.UserAmdocs;
 
 public class CentralPageInteractionWindow extends PrimalWindow {
@@ -47,15 +47,22 @@ public class CentralPageInteractionWindow extends PrimalWindow {
 			if (CheckLoadBar()) {
 				mover_ventana("ABAJO");
 				setLastPatternConfirmed(
-						new Pattern(getWindowPath() + "gestionComercial.PNG").similar(0.95f)
+						new Pattern(reescaledImage("gestionComercial.PNG")).similar(0.65f)
 						);
 				waitInMilisecs(2000);
 				getNextWindowScript().add(getLastPatternConfirmed());
 				setLastPatternConfirmed(
-						new Pattern(getWindowPath() + "gestionComercial_ordenTrabajo.PNG").similar(0.95f)
+						new Pattern(reescaledImage("gestionComercial_ordenTrabajo.PNG")).similar(0.65f)
 						);
 				getNextWindowScript().add(getLastPatternConfirmed());
-				waitInMilisecs(1000);
+				/* para el menu de confirmacion
+				if(getMyScreen().exists(getRepoPath()+"")!= null) {
+					setLastPatternConfirmed(
+							new Pattern(getRepoPath()+"").similar(0.95f)
+							);
+					getNextWindowScript().add(getLastPatternConfirmed());
+				}
+				*/
 				exit = true;
 			} else {
 				exit = false;
@@ -96,14 +103,14 @@ public class CentralPageInteractionWindow extends PrimalWindow {
 
 	}
 
-	public CentralPageInteractionWindow() {
-		super();
+	public CentralPageInteractionWindow(UserAmdocs userAmdocs, Settings settings) {
+		super(userAmdocs,settings);
 		setWindowPath(getRepoPath() + "windows/interactionCentralPage/");
 	}
 
 	public CentralPageInteractionWindow(Screen myScreen, List<Pattern> references, List<Object> data,
-			UserAmdocs userLogged, String MyrepoPath, String sourceAction, Queue<Pattern> nextWindowScript) {
-		super(myScreen, references, data, userLogged, sourceAction, nextWindowScript);
+			UserAmdocs userLogged, String MyrepoPath, String sourceAction, Queue<Pattern> nextWindowScript,Settings settings) {
+		super(myScreen, references, data, userLogged, settings, sourceAction, sourceAction, sourceAction, nextWindowScript);
 		setWindowPath(getRepoPath() + "windows/interactionCentralPage/");
 	}
 
@@ -121,8 +128,8 @@ public class CentralPageInteractionWindow extends PrimalWindow {
 		switch (CentralPageInteractionActions.valueOf(ta.toUpperCase())) {
 		case ACCEDERORDENESTRABAJO:
 			setSourceAction("ACCEDERORDENESTRABAJO");
-			System.out.println("\tacceder a las ordenes de trabajo");
-			System.out.println("\t---------------------------------");
+			System.out.println("acceder a las ordenes de trabajo");
+			System.out.println("---------------------------------");
 			correct = accederOrdenesTrabajo(tmp);
 			break;
 		default:

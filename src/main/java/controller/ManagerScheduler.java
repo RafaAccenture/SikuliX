@@ -2,7 +2,6 @@ package controller;
 
 import java.awt.AWTException;
 import java.awt.HeadlessException;
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,17 +21,20 @@ import tools.ExcelReader;
 import tools.Producer;
 import tools.objects.MyRow;
 import windows.CentralPageInteractionWindow;
+import windows.CreateContractWindow;
 import windows.PrimalWindow;
 import windows.SearchClientWindow;
 import windows.WorkOrdenOneWindow;
 
 public class ManagerScheduler {
 	private enum Actions{
-		GETUSER("inicializar usuario"),
+		GETUSER("inicializar un usuario"),
+		GETSETTINGS("inicializar la configuración"),
 		SEARCHCLIENT("Busqueda de cliente"),
 		CLOSEWINDOW("cerrar ventanas"),
 		CENTRALPAGEINTERACTION("pagina central iteraccion(menu para gestionar un cliente)"),
 		WORKORDERSONE("Ordenes de trabajo 1 de 2"),
+		CREATECONTRACT("Core de amdocs para crear un contrato y/o gestionarlo"),
 		PAUSE("Parar la lectura");
 		
 		private final String text;
@@ -71,21 +73,10 @@ public class ManagerScheduler {
     private void runWindowScript() throws InterruptedException, FindFailed {
     	Queue<Pattern> tmp = new LinkedList<Pattern>(openWindowScript);
     	for(Pattern pat : tmp) {
-    		this.s.find(pat).click();
+    		this.s.findBest(pat).click();
     		TimeUnit.MILLISECONDS.sleep(1500);
     	}
     }
-    /**
-     * Inicializa la configuración del sistema sobre el que corre la aplicación
-     * @return
-     */
- 	private Settings setMyConf() {
- 		Settings tmp = new Settings();
- 		tmp.setResolution(Toolkit.getDefaultToolkit().getScreenSize());
- 		tmp.setMAX_NUMBER_ERRORS(3);
- 		tmp.setEnvironment("TGA21");
-		return null;
-	}
  	
 	/**
 	 * Para la ejecución hasta recibir una entrada de teclado
@@ -133,14 +124,17 @@ public class ManagerScheduler {
 						case GETUSER:							
 							correct = setMyUser(tmp);
 							break;
+						case GETSETTINGS:							
+							correct = setConf(tmp);
+							break;
 						case SEARCHCLIENT:	
-							SearchClientWindow scw = new SearchClientWindow();
+							SearchClientWindow scw = new SearchClientWindow(getMyUser(),getConf());
 							correct = scw.start(tmp);
 							if(correct) setOpenWindowScript(scw.getNextWindowScript());
 							runWindowScript();
 							break;
 						case CENTRALPAGEINTERACTION:
-							CentralPageInteractionWindow cpw = new CentralPageInteractionWindow();
+							CentralPageInteractionWindow cpw = new CentralPageInteractionWindow(getMyUser(),getConf());
 							correct = cpw.start(tmp);
 							if(correct) setOpenWindowScript(cpw.getNextWindowScript());
 							runWindowScript();
@@ -149,13 +143,19 @@ public class ManagerScheduler {
 								openWindowScript.add(tmpPat);
 							break;
 						case WORKORDERSONE:
-							WorkOrdenOneWindow wow = new WorkOrdenOneWindow();
+							WorkOrdenOneWindow wow = new WorkOrdenOneWindow(getMyUser(),getConf());
 							correct = wow.start(tmp);
 							if(correct) setOpenWindowScript(wow.getNextWindowScript());
 							else runWindowScript();
 							break;
+						case CREATECONTRACT:
+							CreateContractWindow cnt = new CreateContractWindow(getMyUser(),getConf());
+							correct = cnt.start(tmp);
+							if(correct) setOpenWindowScript(cnt.getNextWindowScript());
+							else runWindowScript();
+							break;
 						case CLOSEWINDOW:
-							PrimalWindow pw = new PrimalWindow();
+							PrimalWindow pw = new PrimalWindow(getMyUser(),getConf());
 
 							int iterations = Integer.parseInt(tmp.poll());
 							int timeBetween = Integer.parseInt(tmp.poll());
@@ -192,6 +192,7 @@ public class ManagerScheduler {
 		consumer.setOnOff(false);
 		System.out.println("El caso de uso ha reportado "+ThreadProducer.getCounter()+" errores");
 	}
+	
 	/****************************************************************
 	 * 						Parte pública
 	 ****************************************************************/
@@ -203,17 +204,16 @@ public class ManagerScheduler {
  		this.s = new Screen();
  		ExcelReader er = new ExcelReader();
  		//volcamos el excel
-		this.myRows = er.readBooksFromExcelFile("files/pruebas.xlsx");
+		this.myRows = er.readBooksFromExcelFile("files/devmode.xlsx");//pruebas.xlsx
 		this.openWindowScript = new LinkedList<Pattern>();
-		this.conf = setMyConf();
  	}
 
 	public void ShowExcelContent() {
  		System.out.println(this.myRows);
  	}
  	public void start() throws FindFailed, InterruptedException, HeadlessException, IOException, AWTException {
-	ListIterator<MyRow> litr = myRows.listIterator();
- 		this.s.hover("src/main/resources/images/logoHoverVodafone.PNG");
+ 		ListIterator<MyRow> litr = myRows.listIterator();
+	
  		while(litr.hasNext()){
  			System.out.println("---------------------------\nNueva fila\n---------------------------");
  			throwRow(litr.next());
@@ -231,6 +231,7 @@ public class ManagerScheduler {
 	public UserAmdocs getMyUser() {
 		return myUser;
 	}
+	
 	public boolean setMyUser(Queue<String> tmp) {
 		String name = tmp.poll();
 		String rol = tmp.poll();
@@ -244,5 +245,17 @@ public class ManagerScheduler {
 	}
 	public void setOpenWindowScript(Queue<Pattern> queue) {
 		this.openWindowScript = queue;
+	}
+	public Settings getConf() {
+		return conf;
+	}
+	public boolean setConf(Queue<String> tmp) {
+		Settings sts = new Settings();
+		sts.setEnvironment(tmp.poll());
+		sts.setMAX_NUMBER_ERRORS(Integer.parseInt(tmp.poll()));
+		sts.setMAX_TIMEWAIT(Integer.parseInt(tmp.poll()));
+		sts.setScaledImgRatio(Float.valueOf(tmp.poll()));
+		this.conf = sts;
+		return this.conf != null;
 	}
 }
