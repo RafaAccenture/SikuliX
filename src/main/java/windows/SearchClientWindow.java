@@ -97,7 +97,7 @@ public class SearchClientWindow extends PrimalWindow{
 			getMyScreen().type(Key.TAB);
 		}
 		mover_ventana("DERECHA");
-		loc = getMyScreen().find(reescaledImage("FindButton.png")).getTarget();
+		loc = getMyScreen().findBest(reescaledImage("FindButton.png")).getTarget();
 		
 		getMyScreen().click(loc);
 		loc.x-=200;
@@ -139,7 +139,7 @@ public class SearchClientWindow extends PrimalWindow{
 		try {
 			openWindow();	
 			if(!findClient(tmp)) {
-				screenShot("__NO__ENCONTRADO");
+				screenShot("NO__ENCONTRADO");
 				//en caso de no existir cliente
 				waitInMilisecs(1000);
 				getMyScreen().type(Key.ENTER);
@@ -155,6 +155,7 @@ public class SearchClientWindow extends PrimalWindow{
 				//guardamos el 'script' para abrir la siguiente ventana en caso de error
 				getNextWindowScript().add(getLastPatternConfirmed());
 				exit = true;
+				screenShot("ENCONTRADO");
 			}
 		} catch (FindFailed e) {
 			throw e;//salimos de la ventana

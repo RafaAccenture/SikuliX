@@ -5,7 +5,7 @@ public class Settings {
 	private String environment;
 	private int MAX_TIMEWAIT;
 	private int MAX_NUMBER_ERRORS;
-	
+	private String currentTestCaseName;
 	
 	
 	public Settings() {
@@ -45,5 +45,13 @@ public class Settings {
 
 	public void setScaledImgRatio(float scaledImgRatio) {
 		this.scaledImgRatio = scaledImgRatio;
+	}
+
+	public String getCurrentTestCaseName() {
+		return currentTestCaseName;
+	}
+
+	public void setCurrentTestCaseName(String currentTestCaseName) {
+		this.currentTestCaseName = currentTestCaseName;
 	}
 }

@@ -30,10 +30,11 @@ public class ManagerScheduler {
 	private enum Actions{
 		GETUSER("inicializar un usuario"),
 		GETSETTINGS("inicializar la configuración"),
+		TESTCASENAME("indicar el nombre de la prueba para almacenar las evidencias obtenidas"),
 		SEARCHCLIENT("Busqueda de cliente"),
 		CLOSEWINDOW("cerrar ventanas"),
 		CENTRALPAGEINTERACTION("pagina central iteraccion(menu para gestionar un cliente)"),
-		WORKORDERSONE("Ordenes de trabajo 1 de 2"),
+		CATALOG("Ordenes de trabajo 1 de 2"),
 		CREATECONTRACT("Core de amdocs para crear un contrato y/o gestionarlo"),
 		PAUSE("Parar la lectura");
 		
@@ -73,6 +74,7 @@ public class ManagerScheduler {
     private void runWindowScript() throws InterruptedException, FindFailed {
     	Queue<Pattern> tmp = new LinkedList<Pattern>(openWindowScript);
     	for(Pattern pat : tmp) {
+    		System.out.println("mejor porcentaje de similitud : "+this.s.findBest(pat).getScore()*100+"%");
     		this.s.findBest(pat).click();
     		TimeUnit.MILLISECONDS.sleep(1500);
     	}
@@ -127,6 +129,11 @@ public class ManagerScheduler {
 						case GETSETTINGS:							
 							correct = setConf(tmp);
 							break;
+						case TESTCASENAME:
+							getConf().setCurrentTestCaseName(tmp.poll());
+							PrimalWindow pw_testcasename = new PrimalWindow(getMyUser(),getConf());
+							pw_testcasename.createTestFolder();
+							break;
 						case SEARCHCLIENT:	
 							SearchClientWindow scw = new SearchClientWindow(getMyUser(),getConf());
 							correct = scw.start(tmp);
@@ -136,30 +143,31 @@ public class ManagerScheduler {
 						case CENTRALPAGEINTERACTION:
 							CentralPageInteractionWindow cpw = new CentralPageInteractionWindow(getMyUser(),getConf());
 							correct = cpw.start(tmp);
-							if(correct) setOpenWindowScript(cpw.getNextWindowScript());
-							runWindowScript();
-							Pattern tmpPat = cpw.waitExitConfirmation();//en caso de pedir confirmacion para entrar la gestiona
-							if (tmpPat != null)
-								openWindowScript.add(tmpPat);
+							if(correct) {
+								setOpenWindowScript(cpw.getNextWindowScript());
+								runWindowScript();
+								if(cpw.waitExitConfirmation())
+									setOpenWindowScript(cpw.getNextWindowScript());
+							}else runWindowScript();
 							break;
-						case WORKORDERSONE:
+						case CATALOG:
 							WorkOrdenOneWindow wow = new WorkOrdenOneWindow(getMyUser(),getConf());
 							correct = wow.start(tmp);
 							if(correct) setOpenWindowScript(wow.getNextWindowScript());
-							else runWindowScript();
+							runWindowScript();
 							break;
 						case CREATECONTRACT:
 							CreateContractWindow cnt = new CreateContractWindow(getMyUser(),getConf());
 							correct = cnt.start(tmp);
 							if(correct) setOpenWindowScript(cnt.getNextWindowScript());
-							else runWindowScript();
+							runWindowScript();
 							break;
 						case CLOSEWINDOW:
-							PrimalWindow pw = new PrimalWindow(getMyUser(),getConf());
+							PrimalWindow pw_closewindow = new PrimalWindow(getMyUser(),getConf());
 
 							int iterations = Integer.parseInt(tmp.poll());
 							int timeBetween = Integer.parseInt(tmp.poll());
-							pw.closeWindow(iterations, timeBetween);
+							pw_closewindow.closeWindow(iterations, timeBetween);
 							break;
 						case PAUSE:
 							pause();

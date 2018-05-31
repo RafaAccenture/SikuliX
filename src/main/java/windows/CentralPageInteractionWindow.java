@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
 
+import org.sikuli.script.FindFailed;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Screen;
 
@@ -44,25 +45,32 @@ public class CentralPageInteractionWindow extends PrimalWindow {
 		try {
 
 			// emula barra de carga de la ventana en sí
-			if (CheckLoadBar()) {
+			if(
+					CheckLoadBar() && 
+					WaitFor("Esperando a que se cargue el título de la ventana de interacción",
+					new HashMap<Pattern, Boolean>() {/**
+					* busca si esta el boton de cerrar ventana
+					*/
+					private static final long serialVersionUID = 1L;
+					{
+						put(new Pattern(reescaledImage("windowTittle.PNG")).similar(0.9f),true);
+					}},15) 
+			){
 				mover_ventana("ABAJO");
 				setLastPatternConfirmed(
 						new Pattern(reescaledImage("gestionComercial.PNG")).similar(0.65f)
 						);
+				
 				waitInMilisecs(2000);
+				
 				getNextWindowScript().add(getLastPatternConfirmed());
 				setLastPatternConfirmed(
 						new Pattern(reescaledImage("gestionComercial_ordenTrabajo.PNG")).similar(0.65f)
 						);
 				getNextWindowScript().add(getLastPatternConfirmed());
-				/* para el menu de confirmacion
-				if(getMyScreen().exists(getRepoPath()+"")!= null) {
-					setLastPatternConfirmed(
-							new Pattern(getRepoPath()+"").similar(0.95f)
-							);
-					getNextWindowScript().add(getLastPatternConfirmed());
-				}
-				*/
+				
+				waitInMilisecs(2000);
+				screenShot("SIN ERRORES");
 				exit = true;
 			} else {
 				exit = false;
@@ -80,27 +88,17 @@ public class CentralPageInteractionWindow extends PrimalWindow {
 	 * ZONA PUBLICA
 	 * -------------------------------------------------
 	 */
-	public Pattern waitExitConfirmation() {
-		Pattern pat = null;
-		final Pattern SelectAnOption = new Pattern(getRepoPath()+"PopUps/SelectAnOption.PNG")
-				.similar(0.95f);
-		// Emula la barra de carga para chequear si se pide confirmacion
-		if (WaitFor("Esperamos por si pide confirmacion de seleccionar una opcion", new HashMap<Pattern, Boolean>() {
-			/**
-			 * busca si esta el boton de cerrar ventana
-			 */
-			private static final long serialVersionUID = 1L;
-			{
-				put(SelectAnOption, true);
-			}
-		}, 10)) {
-			pat = new Pattern(getRepoPath()+"PopUps/SelectAnOption_yes.PNG");
-			setLastPatternConfirmed(pat);
-			getMyScreen().findBest(getLastPatternConfirmed()).click();
-		} else
-			System.out.println("Salida sin confirmacion");
-		return pat;
-
+	public boolean waitExitConfirmation() throws FindFailed {
+		boolean exit = false;
+		if(getMyScreen().exists(reescaledImage(getRepoPath()+"PopUps/", "SelectAnOption.PNG"))!= null) {
+			setLastPatternConfirmed(
+					new Pattern(reescaledImage(getRepoPath()+"PopUps/", "SelectAnOption_yes.PNG")).similar(0.85f)
+					);
+			getNextWindowScript().add(getLastPatternConfirmed());
+			exit = true;
+			getMyScreen().click(reescaledImage(getRepoPath()+"PopUps/", "SelectAnOption_yes.PNG"));
+		}
+		return exit;
 	}
 
 	public CentralPageInteractionWindow(UserAmdocs userAmdocs, Settings settings) {

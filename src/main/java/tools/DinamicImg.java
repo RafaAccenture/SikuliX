@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -94,20 +95,23 @@ public class DinamicImg {
 		return exit_path;
 	}
 	
-	public String obtainScaledImage(String currentFolderPath,float ratioScale) {
-		InputStream originalStream;
+	public String obtainScaledImage(String currentFolderPath,float ratioScale) throws IOException {
+		InputStream originalStream = null;
+		 OutputStream outStream = null;
+		BufferedImage  original_image = null,scaled_image = null;
 		String exit_path = "";
 		try {
 			  originalStream = new FileInputStream(currentFolderPath+getPath());
 			  
-			  BufferedImage  original_image = ImageIO.read(originalStream);
+			  original_image = ImageIO.read(originalStream);
 			  int scaledWidth = (int) (ratioScale* original_image.getWidth());
 			  int scaledHeight = (int) (ratioScale* original_image.getHeight());
-			  BufferedImage scaled_image = new BufferedImage( scaledWidth, scaledHeight, original_image.getType() );
+			  scaled_image = new BufferedImage( scaledWidth, scaledHeight, original_image.getType() );
 			  Graphics2D g2 = scaled_image.createGraphics(); //crea un objecto Graphics para manipular la imagen
-			  g2.drawImage( original_image, 0, 0, scaledWidth, scaledHeight, null ); //dibuja la imagen escalada
+			  g2.drawImage( original_image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH), 0, 0, scaledWidth, scaledHeight, null ); //dibuja la imagen escalada
+			  g2.dispose();
 			  exit_path = currentFolderPath+"scaled_"+getPath();
-			  OutputStream outStream = new FileOutputStream(exit_path);
+			  outStream = new FileOutputStream(exit_path);
 			  ImageIO.write( scaled_image, "PNG", outStream ); //escribe la imagen en el archivo determinado por la salida outStream
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -115,7 +119,13 @@ public class DinamicImg {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} finally {
+			original_image.flush();
+			scaled_image.flush();
+            outStream.flush();
+            outStream.close();
+            originalStream.close();
+        }
 		return exit_path;
 	}
 	

@@ -26,6 +26,7 @@ import org.sikuli.script.Button;
 import org.sikuli.script.FindFailed;
 import org.sikuli.script.ImagePath;
 import org.sikuli.script.Key;
+import org.sikuli.script.Location;
 import org.sikuli.script.Match;
 import org.sikuli.script.Pattern;
 import org.sikuli.script.Region;
@@ -69,13 +70,26 @@ public class PrimalWindow {
 	 	-------------------------------------------------*/
 	/**
 	 * Dado un menu desplegable en un formulario selecciona la posicion dada como</br>
-	 * parámetro de entrada empezando desde arriba.
+	 * parámetro de entrada empezando desde arriba hacia abajo.
 	 * @param pos : posicion a seleccionar
 	 */
-	void selectFromMenuInput(int pos) {
+	void selectFromMenuInputUp(int pos) {
 		for(int i = 0;i < pos;i++) {
 			waitInMilisecs(300);
 			getMyScreen().type(Key.DOWN);
+		}
+		waitInMilisecs(1000);
+		getMyScreen().type(Key.ENTER);
+	}
+	/**
+	 * Dado un menu desplegable en un formulario selecciona la posicion dada como</br>
+	 * parámetro de entrada empezando desde abajo hacia arriba.
+	 * @param pos : posicion a seleccionar
+	 */
+	void selectFromMenuInputDown(int pos) {
+		for(int i = 0;i < pos;i++) {
+			waitInMilisecs(300);
+			getMyScreen().type(Key.UP);
 		}
 		waitInMilisecs(1000);
 		getMyScreen().type(Key.ENTER);
@@ -146,7 +160,12 @@ public class PrimalWindow {
 	 */
 	protected String reescaledImage(String imageName) {
 		DinamicImg DimImg = new DinamicImg(imageName);
-		String exit = DimImg.obtainScaledImage(getWindowPath(), getSettings().getScaledImgRatio());
+		String exit=null;
+		try {
+			exit = DimImg.obtainScaledImage(getWindowPath(), getSettings().getScaledImgRatio());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return exit;
 	}
 	/**
@@ -158,7 +177,12 @@ public class PrimalWindow {
 	 */
 	protected String reescaledImage(String path, String imageName) {
 		DinamicImg DimImg = new DinamicImg(imageName);
-		String exit = DimImg.obtainScaledImage(path, getSettings().getScaledImgRatio());
+		String exit = null;
+		try {
+			exit = DimImg.obtainScaledImage(path, getSettings().getScaledImgRatio());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return exit;
 	}
 	/**
@@ -178,26 +202,27 @@ public class PrimalWindow {
 		try {
 			if(direccion.equals("ABAJO")) {
 				tmpReg = new Region(1476,148,123,713);//seccion de la derecha del todo
-				tmpReg.hover(getRepoPath()+"vertical_scroll_down.png");
+				tmpReg.hover(reescaledImage(getRepoPath(),"vertical_scroll_down.png"));
 	
 			}else if(direccion.equals("DERECHA")) {
 				tmpReg = new Region(0,794,1600,106);//seccion abajo de la ventana
-				tmpReg.hover(getRepoPath()+"scroll_horizontal_right.png");
+				tmpReg.hover(reescaledImage(getRepoPath(),"scroll_horizontal_right.png"));
 				
 			}else if(direccion.equals("IZQUIERDA")) {
 				tmpReg = new Region(0,794,1600,106);//seccion abajo de la ventana
-				tmpReg.hover(getRepoPath()+"horizontal_scroll_left.png");
+				tmpReg.hover(reescaledImage(getRepoPath(),"horizontal_scroll_left.png"));
 				
 			}
 			
 			waitInMilisecs(500);
 			getMyScreen().mouseDown(Button.LEFT);
-			waitInMilisecs(3000);
+			waitInSecs(3);
 			getMyScreen().mouseUp(Button.LEFT);
 		} catch (FindFailed e) {
 			System.err.println("No se encuentra barra de scroll");
 		}
 	}
+
 	/**
 	 * Hace una captura de pantalla en la carpeta log con el nombre de la accion seguido de --
 	 *  y la fecha actual en el formato  yyyy__MM__dd HH_mm_ss.
@@ -211,8 +236,15 @@ public class PrimalWindow {
 		Date date = new Date();
 		BufferedImage image;
 		try {
+	
 			image = new Robot().createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-		ImageIO.write(image, "png", new File("logs/"+getSourceAction()+note+"--"+dateFormat.format(date)+".png"));
+		ImageIO.write(
+					  image,
+					  "png",
+				      new File("logs/"+
+				    		    getSettings().getCurrentTestCaseName()+
+				    		    "/"+dateFormat.format(date)+"--"+getSourceAction()+"--"+note+".png")
+				      );
 		} catch (HeadlessException e) {
 			System.err.println("\n ï¿½Teclado,raton o monitor no soportado!:\n");
 			e.printStackTrace();
@@ -225,17 +257,23 @@ public class PrimalWindow {
 		}
 	}
 	/**
-	 * 
-	 * @return
+	 * comprueba si está levantada la barra de carga característica de Amdocs abajo a la derecha
+	 * @return <i>False</i> si la carga dura demasiado (30 * (0.5 +Tiempo ejecucion) MAX)<br>
+	 *  <i>True</i> si la carga ha concluído confirmandose hasta 5 veces
 	 */
 	protected boolean CheckLoadBar() {
-		int cont = 40;
-		Pattern generalWait = new Pattern(getRepoPath()+"generalWait.PNG").similar(0.9f);
+		int cont = 30;
+		int confirmaciones = 0;
+		Pattern generalWait = new Pattern(reescaledImage(getRepoPath(),"generalWait.PNG")).similar(0.8f);
 		Region tmpReg = new Region(1420,827,180,73);
-		while(tmpReg.exists(generalWait) != null && cont > 0) {
-			System.out.print(". ");
+		while(confirmaciones<5 && cont > 0) {
+			if(tmpReg.exists(generalWait) != null)
+				confirmaciones++;
+			else {
+				System.out.print(". ");
+				cont--;
+			}
 			waitInMilisecs(500);
-			cont--;
 		}
 		return cont > 0;	
 	}
@@ -284,11 +322,84 @@ public class PrimalWindow {
 			e.printStackTrace();
 		}
 	}
-
+	/**
+	 * Método de espera en segundos
+	 * @param secs : cantidad entera en segundos
+	 */
+	protected void waitInSecs(int secs) {
+		try {
+			TimeUnit.SECONDS.sleep(secs);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * Espera y cierra tantos popUps informativos como se indiquen en el parámetro 
+	 * de entrada generando una evidencia sobre cada uno en la carpeta de la prueba.
+	 * @param numPopupsToClose : número de popUps a cerrar
+	 */
+	protected void waitAndCloseMessagePopUp(int numPopupsToClose) {
+		int contOfPopUps=0;
+		System.out.print("Esperando popUp");
+		while(contOfPopUps<numPopupsToClose) {
+			if(getMyScreen().exists(reescaledImage(getRepoPath()+"PopUps/", "messageIcon.PNG")) != null) {
+				contOfPopUps++;
+				screenShot("MENSAJE_INFO_"+contOfPopUps);
+				waitInSecs(1);
+				getMyScreen().type(Key.ENTER);
+				waitInSecs(1);
+				System.out.print("cargado el numero "+contOfPopUps+"\n");
+			}else {
+				System.out.print(".");
+				waitInMilisecs(200);
+			}
+		}
+		System.out.println("\n terminado todos los popUps");
+	}
+	/**
+	 * Espera y cierra tantos PDFs como se indiquien en el parámetro de entrada
+	 * generando una evidencia sobre cada uno en la carpeta de la prueba.
+	 * @param numPDFsToClose
+	 */
+	protected void waitAndClosePDF(int numPDFsToClose) {
+		int contOfPDFs=0;
+		System.out.print("Esperando PDF");
+		try {
+			while(contOfPDFs<numPDFsToClose) {
+				if(getMyScreen().exists(reescaledImage(getRepoPath(), "pdf_reference.png")) != null) {
+					contOfPDFs++;
+					screenShot("PDF_A_CERRAR"+contOfPDFs);
+					waitInSecs(1);
+					Location loc;
+					loc = getMyScreen().find(reescaledImage(getRepoPath(), "icon_menu_pdf_close.PNG")).getTarget();
+					loc.x+=30;
+					getMyScreen().click(loc);
+					System.out.print("cargado el numero "+contOfPDFs+"\n");
+				}else
+					System.out.print(".");
+			}
+		} catch (FindFailed e) {
+			e.printStackTrace();
+		}
+		System.out.println("\n terminado todos los PDFs");
+	}
 	/*	-------------------------------------------------
 	 * 					ZONA PUBLICA
 	 	-------------------------------------------------*/
-	
+	/**
+	 * Una vez inicializado el nombre de la prueba, esta función crea una carpeta en los logs con el nombre de esta
+	 */
+	public void createTestFolder() {
+		if(getSettings().getCurrentTestCaseName()!=null) {
+		File newFolder = new File("logs/"+getSettings().getCurrentTestCaseName()+"/");
+		boolean created =  newFolder.mkdirs();
+        if(created)
+            System.out.println("Nueva carpeta creada!");
+        else
+            System.err.println("Error al crear la carpeta");
+		}else
+			System.err.println("El nombre de la carpeta no ha sido inicializado");
+	}
 	/**
 	 * Busca el icono de cierre y cierra la ventana n veces segï¿½n el nï¿½mero de iteraciones especificadas
 	 * @param iterations
@@ -296,7 +407,7 @@ public class PrimalWindow {
 	 * @throws FindFailed
 	 */
 	public void closeWindow(int iterations, int timeBetween) throws FindFailed {
-		final Pattern closeWindow = new Pattern(getRepoPath()+"closeWindowButton.PNG").similar(0.95f);
+		final Pattern closeWindow = new Pattern(reescaledImage(getRepoPath(),"closeWindowButton.PNG")).similar(0.85f);
 		while(iterations>0) {
 			waitInMilisecs(timeBetween);
 			if(WaitFor("Cerrando la ventana numero "+iterations,
@@ -311,7 +422,7 @@ public class PrimalWindow {
 				getMyScreen().click(closeWindow);
 				iterations--;
 			}else {
-				System.err.println("no se encuentra el botï¿½n de cerrar ventana");
+				System.err.println("no se encuentra el botón de cerrar ventana");
 				break;
 			}
 				
@@ -320,7 +431,7 @@ public class PrimalWindow {
 	}
 	/**
 	 * Contructor simple
-	 * @param settings2 
+	 * @param settings
 	 * @param userAmdocs 
 	 */
 	public PrimalWindow(UserAmdocs userAmdocs, Settings settings) {
