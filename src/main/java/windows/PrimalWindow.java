@@ -69,11 +69,40 @@ public class PrimalWindow {
 	 * 					ZONA PROTEGIDA
 	 	-------------------------------------------------*/
 	/**
+	 * Dada una cadena de caracteres se sacan os elementos que vayan separados por el patrón "-AND-" formando una lista
+	 * sobre la cual se itera y con el nombre de cada uno de los elementos se hace referencia a una imagen de radiobutton a seleccionar.<br>
+	 * 
+	 * Las imágenes a saleccionar deben ser nombradas dentro de la carpeta de la ventana donde se use
+	 *  de la forma <b> (nombre deseado)_radioButtonEmpty.PNG </b> para poder encontrarse.<br>
+	 *  
+	 *  En caso de que el orden importe se deben indicar en el orden que se desee marcar en los <i> arguments </i> <br>
+	 *  
+	 *  Si la ruta está en una subcarpeta de la ventana se indica en el parámetro <i> extrapath </i>,
+	 *  si va vacía se considerará la ruta de ventana normal
+	 * @param arguments : lista de valores separados por "-AND-"
+	 * @param extraPath : ruta adicional dentro de la ruta de la ventana
+	 */
+	protected void selectRadioButtons(String arguments,String extraPath) {
+		try {
+			String[] buttonsToSelect = arguments.split("-AND-");
+			for(int i=0;i < buttonsToSelect.length;i++) {
+					getMyScreen().find(
+							new Pattern(reescaledImage(getWindowPath()+extraPath+"/", buttonsToSelect[i]+"_radioButton.PNG")).exact()
+					).click();
+				waitInSecs(5);
+				
+			}
+		} catch (FindFailed e) {
+			e.printStackTrace();
+		}
+		
+	}
+	/**
 	 * Dado un menu desplegable en un formulario selecciona la posicion dada como</br>
 	 * parámetro de entrada empezando desde arriba hacia abajo.
 	 * @param pos : posicion a seleccionar
 	 */
-	void selectFromMenuInputUp(int pos) {
+	protected void selectFromMenuInputUp(int pos) {
 		for(int i = 0;i < pos;i++) {
 			waitInMilisecs(300);
 			getMyScreen().type(Key.DOWN);
@@ -86,7 +115,7 @@ public class PrimalWindow {
 	 * parámetro de entrada empezando desde abajo hacia arriba.
 	 * @param pos : posicion a seleccionar
 	 */
-	void selectFromMenuInputDown(int pos) {
+	protected void selectFromMenuInputDown(int pos) {
 		for(int i = 0;i < pos;i++) {
 			waitInMilisecs(300);
 			getMyScreen().type(Key.UP);

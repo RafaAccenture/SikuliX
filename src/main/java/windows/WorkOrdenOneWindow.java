@@ -39,7 +39,7 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 		    return text;
 		}
 	};
-	
+
 	private boolean altaMovil(Queue<String> tmp) throws FindFailed {
 		boolean exit = false;
 		try {
@@ -78,6 +78,9 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 				waitInSecs(15);// para asegurar la carga del menú
 				Location formsLocation;
 				Region forms = new Region(629,151,971,686);
+				//input radiobuttons de línea de teléfono
+				if(!tmp.isEmpty())
+					selectRadioButtons(tmp.poll(),"movil");
 				//input de elección de línea de teléfono
 				formsLocation = forms.find(reescaledImage(getWindowPath()+"movil/","PhoneLineMenu.PNG")).getTarget();
 				formsLocation.x+=20;
