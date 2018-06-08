@@ -20,7 +20,9 @@ public class CreateContractWindow extends PrimalWindow{
 	 	-------------------------------------------------*/
 	private enum ContractActions{
 		VALIDARSIMONLY("Dado un usuario de tipo presencial se valida la SIM y se lanza la orden"),
-		VALIDARSIMCONTERMINAL("Dado un usuario de tipo presencial se valida el IMEI y la SIM, se compra un terminal en tienda y se valida la orden");
+		VALIDARSIMONLY_PORTABILIDAD_MOVIL("Dado un usuario de tipo preencial se valida una SIM de portabilidad, se rellena el formulario y se lanza la orden"),
+		VALIDAR_SIM_IMEI_TIENDA("Dado un usuario de tipo presencial se valida el IMEI y la SIM, se compra un terminal en tienda y se valida la orden"),
+		VALIDAR_IMEI_TIENDA("Dado un usuario de tipo presencial se valida el IMEI, se compra un terminal en tienda y se valida la orden");
 		
 		private final String text;
 	
@@ -55,7 +57,6 @@ public class CreateContractWindow extends PrimalWindow{
 			waitInSecs(5);
 			getMyScreen().click(loc);
 		} catch (FindFailed e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -73,15 +74,12 @@ public class CreateContractWindow extends PrimalWindow{
 	}
 	/**
 	 * se pulsa el boton de continuar finalizar y se esperan los popups
+	 * @throws FindFailed 
 	 */
-	private void continuar_finalizarAction() {
-		try {
-			getMyScreen().find( reescaledImage(getWindowPath()+"phone_equipment/", "continuar_finalizar_button.PNG") ).click();
-			waitAndCloseMessagePopUp(2);
-			waitInSecs(2);
-		} catch (FindFailed e) {
-			e.printStackTrace();
-		}		
+	private void continuar_finalizarAction() throws FindFailed {
+		getMyScreen().find( reescaledImage(getWindowPath()+"phone_equipment/", "continuar_finalizar_button.PNG") ).click();
+		waitAndCloseMessagePopUp(2);
+		waitInSecs(2);
 	}
 	/**
 	 * Función que abarca toda la lógica que se ejecute en la tienda
@@ -98,7 +96,7 @@ public class CreateContractWindow extends PrimalWindow{
 				put(new Pattern(reescaledImage(getWindowPath()+"store/","reference_of_load_phase1.PNG")).similar(0.9f),true);
 				
 			}},15)) {
-			
+				screenShot("metodo_pago");
 				getMyScreen().find( reescaledImage(getWindowPath()+"store/", "pay_method_cash.PNG") ).click();
 			
 			//barra de carga para esperar a los detalles de compra
@@ -109,6 +107,7 @@ public class CreateContractWindow extends PrimalWindow{
 					put(new Pattern(reescaledImage(getWindowPath()+"store/","reference_of_load_phase2.PNG")).similar(0.9f),true);
 					
 				}},15)) {
+					screenShot("compra_confirmada");
 					getMyScreen().find( reescaledImage(getWindowPath()+"store/", "confirmar_compra_button.PNG") ).click();
 					//barra de carga para esperar a la confirmación de la compra
 					if(WaitFor("Esperando a que se carguen los detalles de la compra",
@@ -118,6 +117,7 @@ public class CreateContractWindow extends PrimalWindow{
 							put(new Pattern(reescaledImage(getWindowPath()+"store/","reference_of_load_phase3.PNG")).similar(0.9f),true);
 							
 						}},15)) {
+						screenShot("finalizar_compra");
 						getMyScreen().find( reescaledImage(getWindowPath()+"store/", "close_store_button.PNG") ).click();
 						
 						exit = true;
@@ -130,31 +130,14 @@ public class CreateContractWindow extends PrimalWindow{
 		return exit;
 	}
 	/**
-	 * Función script para tramitar la orden de <i>SIM con terminal</i> en la ventana de creación de contratos. <br>
-	 * validar numero IMEI<br>
-	 * validar numero SIM<br>
-	 * pulsar boton acceso tienda<br>
-	 * esperar a que se abra la tienda<br>
-	 * seleccionar metodo de pago, en este caso al contado<br>
-	 * confirmamos la compra<br>
-	 * vemos que se ha realizado bien y cerramos la ventana<br>
-	 * pulsamos el boton de scoring cerrando los popups habituales<br>
-	 * pulsamos el boton de continuar finalizar + sus popups<br>
-	 * introducimos la firma manual<br>
-	 * volvemos a pulsar el boton de continuar finalizar y sus popups<br>
-	 * @param tmp
-	 * @return
+	 * Script de validación de un IMEI
+	 * @param IMEI
 	 */
-	private boolean validarSIMConTerminal(Queue<String> tmp) {
-		boolean exit = false;
-		String IMEI = tmp.poll();
-		IMEI = IMEI.split("\\$")[1];
-		String SIM = tmp.poll();
-		SIM = SIM.split("\\$")[1];
-		waitInSecs(15);
+	private void validate_IMEI(String IMEI) {
+		// Busca la fila para añadir IMEI dejando vacía primero la casilla
+		Location loc;
 		try {
-			// Busca la fila para añadir IMEI dejando vacía primero la casilla
-			Location loc = getMyScreen().find( reescaledImage(getWindowPath()+"phone_equipment/", "add_imei_row.PNG") ).getTarget();
+			loc = getMyScreen().find( reescaledImage(getWindowPath()+"phone_equipment/", "add_imei_row.PNG") ).getTarget();
 			getMyScreen().doubleClick(loc);
 			for(int i = 0;i<10;i++) {
 				getMyScreen().type(Key.BACKSPACE);
@@ -166,9 +149,19 @@ public class CreateContractWindow extends PrimalWindow{
 			waitInSecs(3);
 			getMyScreen().click(loc);
 			waitAndCloseMessagePopUp(2);
-			
-			// Busca la fila para añadir SIM dejando vacía primero la casilla
-		    loc = getMyScreen().find( reescaledImage(getWindowPath()+"phone_equipment/", "add_sim_row.PNG") ).getTarget();
+		} catch (FindFailed e) {
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * Script de valicación de una SIM
+	 * @param SIM
+	 */
+	private void validate_SIM(String SIM) {
+		Location loc;
+		// Busca la fila para añadir SIM dejando vacía primero la casilla
+	    try {
+			loc = getMyScreen().find( reescaledImage(getWindowPath()+"phone_equipment/", "add_sim_row.PNG") ).getTarget();
 			getMyScreen().doubleClick(loc);
 			for(int i = 0;i<10;i++) {
 				getMyScreen().type(Key.BACKSPACE);
@@ -180,9 +173,95 @@ public class CreateContractWindow extends PrimalWindow{
 			waitInSecs(3);
 			getMyScreen().click(loc);
 			waitAndCloseMessagePopUp(2);
+	    } catch (FindFailed e) {
+			e.printStackTrace();
+		}
+	}
+/********************************************************************************************************
+ *  			FUNCIONES PRINCIPALES
+ ********************************************************************************************************/
+	
+	
+	/**
+	 * Función script para tramitar la orden de <i>SIM con terminal</i> en la ventana de creación de contratos. <br><br>
+	 * pasos a realizar
+	 * <ul>
+	 * <li>validar numero IMEI</li>
+	 * <li>validar numero SIM<br>
+	 * <li>pulsar boton acceso tienda</li>
+	 * <li>esperar a que se abra la tienda</li>
+	 * <li>seleccionar metodo de pago, en este caso al contado</li>
+	 * <li>confirmamos la compra</li>
+	 * <li>vemos que se ha realizado bien y cerramos la ventana</li>
+	 * <li>pulsamos el boton de scoring cerrando los popups habituales</li>
+	 * <li>pulsamos el boton de continuar finalizar + sus popups</li>
+	 * <li>introducimos la firma manual</li>
+	 * <li>volvemos a pulsar el boton de continuar finalizar y sus popups</li>
+	 * </ul>
+	 * @param tmp
+	 * @return
+	 */
+	private boolean validar_SIM_IMEI_ConTiendaEVA(Queue<String> tmp) {
+		boolean exit = false;
+		String IMEI = tmp.poll();
+		IMEI = IMEI.split("\\$")[1];
+		String SIM = tmp.poll();
+		SIM = SIM.split("\\$")[1];
+		waitInSecs(15);
+		try {
+			validate_IMEI(IMEI);
+			validate_SIM(SIM);
 			mover_ventana("ABAJO");
 			getMyScreen().find( reescaledImage(getWindowPath()+"phone_equipment/", "acceso_tienda_button.PNG") ).click();
-	
+			if(StoreProcess()) {
+				scoringAction();
+				continuar_finalizarAction();
+				CheckLoadBar();
+				waitInSecs(5);
+				signatureAcion();
+				waitAndClosePDF(1);
+				//se finaliza la orden
+				continuar_finalizarAction();			
+				exit = true;
+				CheckLoadBar();//para estabilizar el programa antes de cerrar las ventanas
+			}		
+		} catch (FindFailed e) {
+			
+			System.out.println("no se ha encontrado una imagen en creación de contrato");
+			e.printStackTrace();
+		}
+		return exit;
+	}
+
+
+	/**
+	 * Función script para tramitar la orden de <i>IMEI con terminal</i> en la ventana de creación de contratos. <br><br>
+	 * pasos a realizar
+	 * <ul>
+	 * <li>validar numero IMEI</li>
+	 * <li>pulsar boton acceso tienda</li>
+	 * <li>esperar a que se abra la tienda</li>
+	 * <li>seleccionar metodo de pago, en este caso al contado</li>
+	 * <li>confirmamos la compra</li>
+	 * <li>vemos que se ha realizado bien y cerramos la ventana</li>
+	 * <li>pulsamos el boton de scoring cerrando los popups habituales</li>
+	 * <li>pulsamos el boton de continuar finalizar + sus popups</li>
+	 * <li>introducimos la firma manual</li>
+	 * <li>volvemos a pulsar el boton de continuar finalizar y sus popups</li>
+	 * </ul>
+	 * @param tmp
+	 * @return
+	 */
+	private boolean validar_IMEI_ConTiendaEVA(Queue<String> tmp) {
+		boolean exit = false;
+		String IMEI = tmp.poll();
+		IMEI = IMEI.split("\\$")[1];
+		waitInSecs(15);
+		try {
+			validate_IMEI(IMEI);
+			// Bajamos con el scroll de la ventana y accedemos a la tienda
+			mover_ventana("ABAJO");
+			getMyScreen().find( reescaledImage(getWindowPath()+"phone_equipment/", "acceso_tienda_button.PNG") ).click();
 			if(StoreProcess()) {
 				scoringAction();
 				continuar_finalizarAction();
@@ -209,24 +288,11 @@ public class CreateContractWindow extends PrimalWindow{
 	 */
 	private boolean validarSIMOnly(Queue<String> tmp) {
 		boolean exit = false;
-		String SIM = tmp.poll();
-		SIM = SIM.split("\\$")[1];
-		waitInSecs(15);
 		try {
-			// Busca la fila para añadir SIM y deja vacía primero la casilla
-			Location loc = getMyScreen().find( reescaledImage(getWindowPath()+"phone_equipment/", "add_sim_row.PNG") ).getTarget();
-			getMyScreen().doubleClick(loc);
-			for(int i = 0;i<10;i++) {
-				getMyScreen().type(Key.BACKSPACE);
-				waitInMilisecs(300);
-			}
-			getMyScreen().paste(SIM);
-			// Mueve a la derecha la localización para hacer click en agregar SIM
-			loc.x+=100;
-			waitInSecs(3);
-			getMyScreen().click(loc);
-			// Espera popUps y va al botón de scoring
-			waitAndCloseMessagePopUp(2);
+			String SIM = tmp.poll();
+			SIM = SIM.split("\\$")[1];
+			waitInSecs(15);
+			validate_SIM(SIM);
 			mover_ventana("ABAJO");
 			scoringAction();
 			continuar_finalizarAction();
@@ -237,7 +303,42 @@ public class CreateContractWindow extends PrimalWindow{
 			continuar_finalizarAction();				
 			exit = true;
 		} catch (FindFailed e) {
-			System.out.println("no se ha encontrado una imagen en creación de contrato");
+			e.printStackTrace();
+		}
+		return exit;
+	}
+	/**
+	 * Función script para tramitar la validación de una orden SIMonly con portabilidad. <br>
+	 * <ul>
+	 * <li> validar numero SIM de portabilidad </li>
+	 * <li> accedemos al tab de portabilidad movil </li>
+	 * <li> rellenamos el formulario correctamente </li>
+	 * <li> guardamos el formulario rellenado </li>
+	 * <li> pulsamos el boton de scoring cerrando los popups habituales </li>
+	 * <li> pulsamos el boton de continuar finalizar + sus popups </li>
+	 * <li> introducimos la firma manual </li>
+	 * <li> volvemos a pulsar el boton de continuar finalizar y sus popups </li>
+	 * </ul>
+	 * 
+	 * @param tmp
+	 * @return
+	 */
+	private boolean validarSIMOnly_portabilidad_movil(Queue<String> tmp) {
+		boolean exit = false;
+		try {
+			String SIM = tmp.poll();
+			SIM = SIM.split("\\$")[1];
+			waitInSecs(15);
+			validate_SIM(SIM);
+			// TODO falta la interaacion con  el formulario de portabilidad movil
+			scoringAction();
+			continuar_finalizarAction();
+			CheckLoadBar();
+			waitInSecs(5);
+			signatureAcion();
+			waitAndClosePDF(1);
+			continuar_finalizarAction();	
+		} catch (FindFailed e) {
 			e.printStackTrace();
 		}
 		return exit;
@@ -262,7 +363,7 @@ public class CreateContractWindow extends PrimalWindow{
 	 */
 	public boolean start(Queue<String> tmp) throws Exception {
 		boolean correct = false;
-		// se espera a la cargad e la ventana
+		// se espera a la carga de la ventana
 		if(
 				CheckLoadBar() && 
 				WaitFor("Esperando a que se cargue el título de la ventana de creación de contrato",
@@ -278,24 +379,35 @@ public class CreateContractWindow extends PrimalWindow{
 			System.out.println("Descripción de la acción:");
 			switch(ContractActions.valueOf(ta.toUpperCase())) {
 				case VALIDARSIMONLY:
-					setSourceAction("VALIDARSIMPRESENCIAL");
+					setSourceAction("VALIDARSIMONLY");
 					System.out.println("se introduce una SIM y se valida");
 					System.out.println("---------------------------------");	
 					correct = validarSIMOnly(tmp);
 					break;
-				case VALIDARSIMCONTERMINAL:
-					setSourceAction("VALIDARSIMCONTERMINAL");
-					System.out.println("se compra una terminal  y se validan los datos");
+				case VALIDAR_SIM_IMEI_TIENDA:
+					setSourceAction("VALIDAR_SIM_IMEI_TIENDA");
+					System.out.println("se compra una terminal y se validan los datos");
 					System.out.println("---------------------------------");	
-					correct = validarSIMConTerminal(tmp);
+					correct = validar_SIM_IMEI_ConTiendaEVA(tmp);
+					break;
+				case VALIDAR_IMEI_TIENDA:
+					setSourceAction("VALIDAR_IMEI_TIENDA");
+					System.out.println("se compra una terminal y se validan los datos");
+					System.out.println("---------------------------------");	
+					correct = validar_IMEI_ConTiendaEVA(tmp);
+					break;
+				case VALIDARSIMONLY_PORTABILIDAD_MOVIL:
+					setSourceAction("VALIDARSIMONLY_PORTABILIDAD_MOVIL");
+					System.out.println("se introduce una SIM de portabilidad, se validan los datos y se rellena el formulario de portabilidad");
+					System.out.println("---------------------------------");
+					correct = validarSIMOnly_portabilidad_movil(tmp);
 					break;
 				default: 
 					System.out.println("Acción no contemplada");
 					correct = true;	
 			}
 		}
-		return correct;
-	}
+		return correct;													  	}
 
 	
 }

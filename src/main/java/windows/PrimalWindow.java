@@ -450,6 +450,7 @@ public class PrimalWindow {
 				}},80)) {
 				getMyScreen().click(closeWindow);
 				iterations--;
+				waitInSecs(5);
 			}else {
 				System.err.println("no se encuentra el botón de cerrar ventana");
 				break;
