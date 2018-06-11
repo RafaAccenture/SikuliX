@@ -122,8 +122,12 @@ public class CentralPageInteractionWindow extends PrimalWindow {
 	public boolean start(Queue<String> tmp) throws Exception {
 		boolean correct = false;
 		String ta = tmp.poll();// tipo de acción
-		System.out.print("accion de ");
-		switch (CentralPageInteractionActions.valueOf(ta.toUpperCase())) {
+		System.out.print("Descripción de la acción: ");
+		String action = ta.toUpperCase();
+		System.out.println(CentralPageInteractionActions.valueOf(action).toString());
+		System.out.println("---------------------------------");
+		setSourceAction(action);
+		switch (CentralPageInteractionActions.valueOf(action)) {
 		case ACCEDERORDENESTRABAJO:
 			setSourceAction("ACCEDERORDENESTRABAJO");
 			System.out.println("acceder a las ordenes de trabajo");

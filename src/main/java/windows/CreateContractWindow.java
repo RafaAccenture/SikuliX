@@ -1,7 +1,11 @@
 package windows;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Queue;
 
 import org.sikuli.script.FindFailed;
@@ -20,10 +24,14 @@ public class CreateContractWindow extends PrimalWindow{
 	 	-------------------------------------------------*/
 	private enum ContractActions{
 		VALIDARSIMONLY("Dado un usuario de tipo presencial se valida la SIM y se lanza la orden"),
-		VALIDARSIMONLY_PORTABILIDAD_MOVIL("Dado un usuario de tipo preencial se valida una SIM de portabilidad, se rellena el formulario y se lanza la orden"),
-		VALIDAR_SIM_IMEI_TIENDA("Dado un usuario de tipo presencial se valida el IMEI y la SIM, se compra un terminal en tienda y se valida la orden"),
-		VALIDAR_IMEI_TIENDA("Dado un usuario de tipo presencial se valida el IMEI, se compra un terminal en tienda y se valida la orden");
 		
+		VALIDARSIMONLY_PORTABILIDAD_MOVIL("Dado un usuario de tipo presencial se valida una SIM de portabilidad, se rellena el formulario y se lanza la orden"),
+		
+		VALIDAR_SIM_IMEI_TIENDA("Dado un usuario de tipo presencial se valida el IMEI y la SIM, se compra un terminal en tienda y se valida la orden"),
+		
+		VALIDAR_IMEI_TIENDA("Dado un usuario de tipo presencial se valida el IMEI, se compra un terminal en tienda y se valida la orden"),
+		
+		SIMONLY_TELETIENDA("Dado un usuario no presencial, ");
 		private final String text;
 	
 		 /**
@@ -44,6 +52,26 @@ public class CreateContractWindow extends PrimalWindow{
 	/********************************************************************************************************
 	 *  			FUNCIONES DE APOYO
 	 ********************************************************************************************************/
+	/**
+	 * función script que selecciona un día de envío en función del día actual
+	 */
+	private String selectDeliveryDay() {
+		Date date=new Date(); 
+		String dayOfWeek = new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date);
+		Calendar c = Calendar.getInstance();
+	    c.setTime(date);
+	    if(dayOfWeek.equals("Thursday"))
+	    	c.add(Calendar.DATE, 4);
+	    else if (dayOfWeek.equals("Friday"))
+	    	c.add(Calendar.DATE, 3);
+	    else if (dayOfWeek.equals("Sunday"))
+	    	c.add(Calendar.DATE, 1);
+	    else
+	    	c.add(Calendar.DATE, 2);
+	    	
+	    return new SimpleDateFormat("dd/MM/yyyy  HH:mm:ss").format(c);
+		 
+	}
 	/**
 	 * se lleva a cabo la lógica de firma
 	 */
@@ -83,6 +111,27 @@ public class CreateContractWindow extends PrimalWindow{
 	}
 	/**
 	 * Función que abarca toda la lógica que se ejecute en la tienda
+	 * @return
+	 * @throws FindFailed 
+	 */
+	private void mobile_portability_form() throws FindFailed {
+		// TODO depurar debido a un error seleccionando la nacionalidad
+		getMyScreen().find(reescaledImage(getWindowPath()+"mobile_portability/", "to_specify_menu.PNG"));
+		getMyScreen().type(Key.ENTER);
+		getMyScreen().type(Key.TAB);
+		getMyScreen().type("Fakename");
+		getMyScreen().type(Key.TAB);
+		getMyScreen().type("Fakelastnameone");
+		getMyScreen().type("Fakelastnametwo");
+		//menu para operador donante
+		selectFromMenuInputUp(5);
+		getMyScreen().type(Key.TAB);
+		getMyScreen().type("678678678");
+		//menu para nacionalidad
+		selectFromMenuInputUp(2);
+	}
+	/**
+	 * función script encargada de las acciones llevadas a cabo dentro de la ventana de la tienda 
 	 * @return
 	 */
 	private boolean StoreProcess() {
@@ -180,7 +229,42 @@ public class CreateContractWindow extends PrimalWindow{
 /********************************************************************************************************
  *  			FUNCIONES PRINCIPALES
  ********************************************************************************************************/
-	
+	/** función script para el alta de sim por televenta <br><br>
+	 * <ul>
+	 * <li>añadir direccion de envío (pestañita arriba)</li>
+	 * <li>añadir fecha del envío</li>
+	 * <li>elegir envío a tienda o a domicilio(en caso de ser a domicilio se necesita el numero de operador logistico random , es un movil random)</li>
+	 * <li>pulsar el boton de guardar</li>
+	 * <li>introducir método de pago ( preferiblemente contrarrembolso )</li>
+	 * <li>pulsar boton de pagar y salen pop ups de confirmación</li>
+	 * <li>pulsamos cerrar</li>
+	 * <li>pulsar el boton de scoring y cerrar sus pop ups</li>
+	 * <li>pulsar boton de continuar / finalizar y cerrar sus popups</li>
+	 * <li>saldrá un pop up de eleccion de calidad de la venta ( pulsar OK OK preferentemente)</li>
+	 * <li>pulsar de nuevo continuar / finalizar para que se guarden los datos y se levantan los procesos</li>
+	 * </ul>
+	 * @param tmp
+	 * @return
+	 */
+	private boolean SIMOnly_teletienda(Queue<String> tmp) {
+		// TODO por completar
+		boolean exit = false;
+		try {
+			Location loc = getMyScreen().find(reescaledImage(getWindowPath()+"delivery_address/", "delivery_date.PNG")).getTarget();
+			loc.x-= 30;
+			getMyScreen().click(loc);
+			for (int i = 0; i<40;i++)
+				getMyScreen().type(Key.BACKSPACE);
+			getMyScreen().type(selectDeliveryDay());
+			continuar_finalizarAction();
+			exit = true;
+		} catch (FindFailed e) {
+			//se finaliza la orden
+			System.err.println("fallo por búsqueda de imagen en simonly_teletienda");
+			e.printStackTrace();
+		}
+		return exit;
+	}	
 	
 	/**
 	 * Función script para tramitar la orden de <i>SIM con terminal</i> en la ventana de creación de contratos. <br><br>
@@ -330,7 +414,9 @@ public class CreateContractWindow extends PrimalWindow{
 			SIM = SIM.split("\\$")[1];
 			waitInSecs(15);
 			validate_SIM(SIM);
-			// TODO falta la interaacion con  el formulario de portabilidad movil
+			// TODO debido a un error en el formulario queda sin probar
+			mobile_portability_form();
+			getMyScreen().find(reescaledImage("save_button.PNG")).click();
 			scoringAction();
 			continuar_finalizarAction();
 			CheckLoadBar();
@@ -377,31 +463,26 @@ public class CreateContractWindow extends PrimalWindow{
 		) {
 			String ta = tmp.poll();//tipo de acción	
 			System.out.println("Descripción de la acción:");
-			switch(ContractActions.valueOf(ta.toUpperCase())) {
+			String action = ta.toUpperCase();
+			System.out.print("Accion de " +ContractActions.valueOf(action).toString());
+			System.out.println("---------------------------------");
+			setSourceAction(action);
+			switch(ContractActions.valueOf(action)) {
 				case VALIDARSIMONLY:
-					setSourceAction("VALIDARSIMONLY");
-					System.out.println("se introduce una SIM y se valida");
-					System.out.println("---------------------------------");	
 					correct = validarSIMOnly(tmp);
 					break;
 				case VALIDAR_SIM_IMEI_TIENDA:
-					setSourceAction("VALIDAR_SIM_IMEI_TIENDA");
-					System.out.println("se compra una terminal y se validan los datos");
-					System.out.println("---------------------------------");	
 					correct = validar_SIM_IMEI_ConTiendaEVA(tmp);
 					break;
 				case VALIDAR_IMEI_TIENDA:
-					setSourceAction("VALIDAR_IMEI_TIENDA");
-					System.out.println("se compra una terminal y se validan los datos");
-					System.out.println("---------------------------------");	
 					correct = validar_IMEI_ConTiendaEVA(tmp);
 					break;
 				case VALIDARSIMONLY_PORTABILIDAD_MOVIL:
-					setSourceAction("VALIDARSIMONLY_PORTABILIDAD_MOVIL");
-					System.out.println("se introduce una SIM de portabilidad, se validan los datos y se rellena el formulario de portabilidad");
-					System.out.println("---------------------------------");
 					correct = validarSIMOnly_portabilidad_movil(tmp);
 					break;
+				case SIMONLY_TELETIENDA:
+					//TODO por acabar
+					correct = SIMOnly_teletienda(tmp);
 				default: 
 					System.out.println("Acción no contemplada");
 					correct = true;	

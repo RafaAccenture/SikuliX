@@ -120,8 +120,8 @@ public class ManagerScheduler {
 						runWindowScript();
 					}
 					Queue<String> tmp = new LinkedList<String>(Original);
-					System.out.print("Accion de " +Actions.valueOf(action).toString());
-					System.out.println("\n---------------------------------");
+					System.out.println("Accion de " +Actions.valueOf(action).toString());
+					System.out.println("---------------------------------");
 					switch(Actions.valueOf(action)) {
 						case GETUSER:							
 							correct = setMyUser(tmp);

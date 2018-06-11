@@ -19,7 +19,7 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 	/*	-------------------------------------------------
 	 * 					ZONA PRIVADA
 	 	-------------------------------------------------*/
-	private enum CentralPageInteractionActions{
+	private enum CatalogActions{
 		ALTAMOVIL("dar de alta un movil para el cliente"),
 		MODIFICARMOVIL("modificar un movil ya existente");
 		private final String text;
@@ -27,7 +27,7 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 		 /**
 		  * @param text
 		  */
-		private CentralPageInteractionActions(final String text) {
+		private CatalogActions(final String text) {
 		    this.text = text;
 		}
 	
@@ -68,7 +68,6 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 		
 			new Region(317,174,441,470).find(reescaledImage(getRepoPath(), "colorOfFocused.PNG")).click();
 		} catch (FindFailed e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -137,7 +136,7 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 			formsLocation = forms.find(reescaledImage(getWindowPath()+"movil/","callCostMenu.PNG")).getTarget();
 			formsLocation.x+=20;
 			forms.click(formsLocation);
-			selectFromMenuInputUp(10);
+			selectFromMenuInputUp(13);
 			waitInMilisecs(1000);
 			//input de elección de SIM
 			formsLocation = forms.find(reescaledImage(getWindowPath()+"movil/","simMenu.PNG")).getTarget();
@@ -146,7 +145,7 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 			selectFromMenuInputUp(2);
 			waitInMilisecs(1000);
 			
-			mover_ventana("ABAJO");
+			mover_ventana("ABAJO");	
 			forms.findBest(reescaledImage(getWindowPath()+"movil/","AcceptButton.PNG")).click();
 			CheckLoadBar();
 			waitInSecs(12);
@@ -194,18 +193,16 @@ public class WorkOrdenOneWindow extends PrimalWindow{
 						}},15) 
 		 ) {
 			String ta = tmp.poll();//tipo de acción	
-			System.out.print("accion de ");
-			switch(CentralPageInteractionActions.valueOf(ta.toUpperCase())) {
+			System.out.print("Descripción de la acción: ");
+			String action = ta.toUpperCase();
+			System.out.println(CatalogActions.valueOf(action).toString());
+			System.out.println("---------------------------------");
+			setSourceAction(action);
+			switch(CatalogActions.valueOf(ta.toUpperCase())) {
 				case ALTAMOVIL:
-					setSourceAction("ALTAMOVIL");
-					System.out.println("dar de alta un móvil");
-					System.out.println("---------------------------------");	
 					correct = altaMovil(tmp);
 					break;
 				case MODIFICARMOVIL:
-					setSourceAction("MODIFICARMOVIL");
-					System.out.println("modificar un móvil");
-					System.out.println("---------------------------------");
 					correct = modificarMovil(tmp);
 					
 				default: 

@@ -230,6 +230,7 @@ public class PrimalWindow {
 		Region tmpReg;
 		try {
 			if(direccion.equals("ABAJO")) {
+				//TODO falla con pantalla completa. cambiar dimensiones de region 
 				tmpReg = new Region(1476,148,123,713);//seccion de la derecha del todo
 				tmpReg.hover(reescaledImage(getRepoPath(),"vertical_scroll_down.png"));
 	

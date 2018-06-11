@@ -42,6 +42,15 @@ public class SearchClientWindow extends PrimalWindow{
 	};
 	
 	private void openWindow() throws FindFailed, IOException {
+		getMyScreen().type(Key.ALT);
+		waitInMilisecs(500);
+		getMyScreen().type(Key.RIGHT);
+		waitInMilisecs(500);
+		getMyScreen().type(Key.DOWN);
+		waitInMilisecs(500);
+		getMyScreen().type(Key.ENTER);
+		waitInMilisecs(500);
+		/*
 		dinamicClick(
 				"Buscar",
 				"Cambria",
@@ -59,6 +68,7 @@ public class SearchClientWindow extends PrimalWindow{
 		getMyScreen().type(Key.ENTER);
 
 		waitInMilisecs(500);
+		*/
 	}
 	private boolean existUser() {
 		final Pattern MessageError = new Pattern(getWindowPath()+"popups/MessageError.PNG").similar(0.95f);
@@ -85,7 +95,8 @@ public class SearchClientWindow extends PrimalWindow{
 
 		getMyScreen().keyDown(Key.SHIFT);
 		//nos situamos en el principio del formulario
-		for(int i = 0;i<18;i++)
+		int elemsForm = getUserLogged().getRol().equals("PRESENCIAL") ? 18 : 17;//comprobamos el rol del usuario para determinar el tamaño del formulario
+		for(int i = 0;i<elemsForm;i++)
 			getMyScreen().type(Key.TAB);
 		getMyScreen().keyUp(Key.SHIFT);
 		//descomponemos el string con los campos del formulario de búsqueda
@@ -188,8 +199,12 @@ public class SearchClientWindow extends PrimalWindow{
 	public boolean start(Queue<String> tmp) throws Exception {
 		boolean correct = false;
 		String ta = tmp.poll();//tipo de acción	
-		System.out.print("accion de ");
-		switch(SearchClientActions.valueOf(ta.toUpperCase())) {
+		System.out.print("Descripción de la acción: ");
+		String action = ta.toUpperCase();
+		System.out.println(SearchClientActions.valueOf(action).toString());
+		System.out.println("---------------------------------");
+		setSourceAction(action);
+		switch(SearchClientActions.valueOf(action)) {
 			case SELECTCLIENT:
 				setSourceAction("SELECTCLIENT");
 				System.out.println("selecionar cliente");
